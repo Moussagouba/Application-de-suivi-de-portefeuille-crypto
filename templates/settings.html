@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres - Portefeuille Crypto{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <h1 class="mb-6 text-center">
+        <i class="fas fa-cog"></i>
+        Paramètres
+    </h1>
+
+    <!-- Paramètres généraux -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-sliders-h"></i>
+                Paramètres Généraux
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                </label>
+                <div class="flex items-center justify-between">
+                    <span class="text-secondary">Activer les notifications de prix</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="notificationsToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualisation automatique
+                </label>
+                <div class="flex items-center justify-between">
+                    <span class="text-secondary">Mettre à jour les prix automatiquement</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoRefreshToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-clock"></i>
+                    Intervalle d'actualisation
+                </label>
+                <select class="form-input" id="refreshInterval">
+                    <option value="60">1 minute</option>
+                    <option value="300" selected>5 minutes</option>
+                    <option value="600">10 minutes</option>
+                    <option value="1800">30 minutes</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Devise et affichage -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-dollar-sign"></i>
+                Devise et Affichage
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-coins"></i>
+                    Devise principale
+                </label>
+                <select class="form-input" id="mainCurrency">
+                    <option value="USD" selected>Dollar américain (USD)</option>
+                    <option value="EUR">Euro (EUR)</option>
+                    <option value="GBP">Livre sterling (GBP)</option>
+                    <option value="CAD">Dollar canadien (CAD)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-palette"></i>
+                    Thème
+                </label>
+                <div class="theme-selector">
+                    <div class="theme-option active" data-theme="light">
+                        <div class="theme-preview light-theme"></div>
+                        <span>Clair</span>
+                    </div>
+                    <div class="theme-option" data-theme="dark">
+                        <div class="theme-preview dark-theme"></div>
+                        <span>Sombre</span>
+                    </div>
+                    <div class="theme-option" data-theme="auto">
+                        <div class="theme-preview auto-theme"></div>
+                        <span>Automatique</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sécurité -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-shield-alt"></i>
+                Sécurité
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label class="form-label">
+                            <i class="fas fa-lock"></i>
+                            Code PIN
+                        </label>
+                        <div class="form-help">Protéger l'application avec un code PIN</div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" id="setupPinBtn">
+                        <i class="fas fa-key"></i>
+                        Configurer
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label class="form-label">
+                            <i class="fas fa-fingerprint"></i>
+                            Biométrie
+                        </label>
+                        <div class="form-help">Utiliser la reconnaissance biométrique</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="biometricToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Données -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-database"></i>
+                Gestion des Données
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-cloud-download-alt"></i>
+                    Sauvegarde
+                </label>
+                <div class="flex gap-2">
+                    <button class="btn btn-secondary" id="exportDataBtn">
+                        <i class="fas fa-download"></i>
+                        Exporter les données
+                    </button>
+                    <button class="btn btn-secondary" id="importDataBtn">
+                        <i class="fas fa-upload"></i>
+                        Importer les données
+                    </button>
+                </div>
+                <div class="form-help">Sauvegarder ou restaurer votre portefeuille</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-trash-alt"></i>
+                    Réinitialiser
+                </label>
+                <button class="btn btn-danger" id="resetAppBtn">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Réinitialiser l'application
+                </button>
+                <div class="form-help">Attention: Cette action supprimera toutes vos données</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- À propos -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-info-circle"></i>
+                À Propos
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="about-section">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="app-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold">Portefeuille Crypto</div>
+                        <div class="text-secondary">Version 1.0.0</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-secondary">
+                        Une application mobile moderne pour suivre votre portefeuille de cryptomonnaies en temps réel.
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="font-semibold mb-2">Fonctionnalités:</h4>
+                    <ul class="text-secondary">
+                        <li>• Suivi en temps réel des prix</li>
+                        <li>• Gestion de portefeuille complète</li>
+                        <li>• Analytics et graphiques</li>
+                        <li>• Interface mobile optimisée</li>
+                        <li>• Notifications de prix</li>
+                    </ul>
+                </div>
+
+                <div class="flex gap-2">
+                    <button class="btn btn-ghost btn-sm" id="contactSupportBtn">
+                        <i class="fas fa-envelope"></i>
+                        Support
+                    </button>
+                    <button class="btn btn-ghost btn-sm" id="privacyPolicyBtn">
+                        <i class="fas fa-shield-alt"></i>
+                        Confidentialité
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: var(--transition);
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: var(--transition);
+        border-radius: 50%;
+    }
+
+    input:checked+.slider {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(26px);
+    }
+
+    /* Theme Selector */
+    .theme-selector {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .theme-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .theme-option:hover {
+        border-color: var(--primary-color);
+    }
+
+    .theme-option.active {
+        border-color: var(--primary-color);
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    .theme-preview {
+        width: 40px;
+        height: 30px;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--border-color);
+    }
+
+    .light-theme {
+        background: linear-gradient(45deg, #ffffff, #f7fafc);
+    }
+
+    .dark-theme {
+        background: linear-gradient(45deg, #2d3748, #1a202c);
+    }
+
+    .auto-theme {
+        background: linear-gradient(45deg, #ffffff 50%, #2d3748 50%);
+    }
+
+    /* App Icon */
+    .app-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: var(--border-radius);
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    /* About Section */
+    .about-section {
+        font-size: 0.9rem;
+    }
+
+    .about-section ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .about-section li {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Card Body */
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .theme-selector {
+            flex-direction: column;
+        }
+
+        .theme-option {
+            flex-direction: row;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Theme Selector
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', function () {
+                document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+
+                const theme = this.dataset.theme;
+                localStorage.setItem('theme', theme);
+
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else if (theme === 'light') {
+                    document.body.classList.remove('dark-theme');
+                } else {
+                    // Auto theme - can be implemented with media queries
+                    document.body.classList.remove('dark-theme');
+                }
+            });
+        });
+
+        // Load saved settings
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        const themeOption = document.querySelector(`[data-theme="${savedTheme}"]`);
+        if (themeOption) {
+            themeOption.click();
+        }
+
+        // Save settings on change
+        document.querySelectorAll('input[type="checkbox"], select').forEach(element => {
+            element.addEventListener('change', function () {
+                const setting = this.id;
+                const value = this.type === 'checkbox' ? this.checked : this.value;
+                localStorage.setItem(setting, value);
+            });
+        });
+
+        // Load saved values
+        document.querySelectorAll('input[type="checkbox"], select').forEach(element => {
+            const savedValue = localStorage.getItem(element.id);
+            if (savedValue !== null) {
+                if (element.type === 'checkbox') {
+                    element.checked = savedValue === 'true';
+                } else {
+                    element.value = savedValue;
+                }
+            }
+        });
+
+        // Export Data
+        document.getElementById('exportDataBtn').addEventListener('click', function () {
+            // Simulate export
+            const data = {
+                export_date: new Date().toISOString(),
+                portfolio_data: 'Your portfolio data here'
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `crypto-portfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('Données exportées avec succès!', 'success');
+        });
+
+        // Import Data
+        document.getElementById('importDataBtn').addEventListener('click', function () {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    showNotification('Import en cours...', 'info');
+                    // Simulate import
+                    setTimeout(() => {
+                        showNotification('Données importées avec succès!', 'success');
+                    }, 2000);
+                }
+            };
+            input.click();
+        });
+
+        // Reset App
+        document.getElementById('resetAppBtn').addEventListener('click', function () {
+            if (confirm('Êtes-vous absolument sûr? Cette action supprimera toutes vos données.')) {
+                if (confirm('Cette action est irréversible. Continuer?')) {
+                    showNotification('Réinitialisation en cours...', 'warning');
+                    setTimeout(() => {
+                        localStorage.clear();
+                        showNotification('Application réinitialisée', 'success');
+                    }, 2000);
+                }
+            }
+        });
+
+        // Setup PIN
+        document.getElementById('setupPinBtn').addEventListener('click', function () {
+            showNotification('Configuration du PIN bientôt disponible', 'info');
+        });
+
+        // Support and Privacy buttons
+        document.getElementById('contactSupportBtn').addEventListener('click', function () {
+            window.location.href = 'mailto:support@crypto-portfolio.com';
+        });
+
+        document.getElementById('privacyPolicyBtn').addEventListener('click', function () {
+            showNotification('Politique de confidentialité bientôt disponible', 'info');
+        });
+    });
+
+    // Notification function
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+        <div class="flex items-center gap-2">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+{% endblock %}

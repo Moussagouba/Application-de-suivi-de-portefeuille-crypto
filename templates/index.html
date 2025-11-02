@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}Portefeuille Crypto - Accueil{% endblock %}
+
+{% block content %}
+<!-- Résumé du portefeuille -->
+<div class="portfolio-summary fade-in">
+    <div class="total-value">
+        ${{ "%.2f"|format(total_portfolio_value) }}
+    </div>
+    <div class="profit-loss {{ 'profit' if total_profit_loss >= 0 else 'loss' }}">
+        {% if total_profit_loss >= 0 %}
+        <i class="fas fa-arrow-up"></i>
+        {% else %}
+        <i class="fas fa-arrow-down"></i>
+        {% endif %}
+        ${{ "%.2f"|format(total_profit_loss if total_profit_loss >= 0 else -total_profit_loss) }}
+        ({{ "%.2f"|format(total_profit_loss_percentage if total_profit_loss_percentage >= 0 else
+        -total_profit_loss_percentage) }}%)
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="grid grid-cols-3 mb-6">
+    <form method="POST" action="{{ url_for('refresh_prices') }}">
+        <button type="submit" class="btn btn-primary" id="refreshBtn">
+            <i class="fas fa-sync-alt"></i>
+            Actualiser
+        </button>
+    </form>
+    <a href="{{ url_for('add_crypto') }}" class="btn btn-success">
+        <i class="fas fa-plus"></i>
+        Ajouter
+    </a>
+    <a href="{{ url_for('withdraw_crypto') }}" class="btn btn-danger">
+        <i class="fas fa-wallet"></i>
+        Retirer
+    </a>
+</div>
+
+<!-- Graphiques et analytics -->
+{% if cryptos|length > 0 %}
+<div class="grid grid-cols-1 grid-cols-2 mb-6">
+    <!-- Graphique de répartition -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-pie"></i>
+                Répartition du Portefeuille
+            </h3>
+        </div>
+        <canvas id="allocationChart" width="400" height="300"></canvas>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-bar"></i>
+                Statistiques
+            </h3>
+        </div>
+        <div id="portfolioStats">
+            <div class="stat-item mb-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-secondary">Valeur totale</span>
+                    <span class="font-semibold">${{ "%.2f"|format(total_portfolio_value) }}</span>
+                </div>
+            </div>
+            <div class="stat-item mb-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-secondary">Investi</span>
+                    <span class="font-semibold">${{ "%.2f"|format(total_invested|default(0)) }}</span>
+                </div>
+            </div>
+            <div class="stat-item mb-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-secondary">Performance</span>
+                    <span class="font-semibold {{ 'profit' if total_profit_loss >= 0 else 'loss' }}">
+                        {% if total_profit_loss >= 0 %}+{% endif %}
+                        ${{ "%.2f"|format(total_profit_loss) }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Liste des cryptomonnaies -->
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-list"></i>
+            Mes Cryptomonnaies
+        </h3>
+        <span class="text-secondary">{{ cryptos|length }} crypto{% if cryptos|length != 1 %}s{% endif %}</span>
+    </div>
+
+    {% if cryptos|length > 0 %}
+    <div class="crypto-list">
+        {% for crypto in cryptos %}
+        <div class="crypto-card"
+            data-crypto="{{ crypto.name }}|{{ crypto.symbol }}|{{ crypto.current_value|round(2) }}">
+            <div class="crypto-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="crypto-info">
+                <div class="crypto-name">{{ crypto.name }}</div>
+                <div class="crypto-symbol">{{ crypto.symbol }}</div>
+                <div class="crypto-details">
+                    {{ crypto.quantity }} × ${{ "%.2f"|format(crypto.purchase_price) }}
+                </div>
+            </div>
+            <div class="crypto-value">
+                <div class="current-price">${{ "%.2f"|format(crypto.current_price) }}</div>
+                <div class="profit-loss-small {{ 'profit' if crypto.profit_loss >= 0 else 'loss' }}">
+                    {% if crypto.profit_loss >= 0 %}+{% endif %}
+                    ${{ "%.2f"|format(crypto.profit_loss) }}
+                </div>
+                {% if crypto.price_change_24h %}
+                <div class="price-change-24h">
+                    <i class="fas fa-clock"></i>
+                    {{ "%.2f"|format(crypto.price_change_24h if crypto.price_change_24h >= 0 else
+                    -crypto.price_change_24h) }}% (24h)
+                </div>
+                {% endif %}
+                <div class="crypto-actions mt-2">
+                    <a href="{{ url_for('edit_crypto', crypto_id=crypto.id) }}" class="btn btn-sm btn-ghost">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <form method="POST" action="{{ url_for('delete_crypto', crypto_id=crypto.id) }}"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette crypto?')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-coins"></i>
+        <p>Aucune cryptomonnaie dans votre portefeuille</p>
+        <a href="{{ url_for('add_crypto') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Ajouter votre première crypto
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Marché en direct -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-chart-line"></i>
+            Marché en Direct
+        </h3>
+        <button class="btn btn-sm btn-ghost" onclick="loadMarketData()">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    </div>
+    <div class="market-list" id="marketList">
+        <p class="text-center text-secondary">Chargement des données du marché...</p>
+    </div>
+</div>
+
+<style>
+    .stat-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+
+    .text-secondary {
+        color: var(--text-secondary);
+    }
+
+    .crypto-actions {
+        display: flex;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .crypto-actions .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .market-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .market-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .market-item:last-child {
+        border-bottom: none;
+    }
+
+    .market-crypto-info {
+        flex: 1;
+    }
+
+    .market-crypto-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .market-crypto-symbol {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+    }
+
+    .market-price {
+        text-align: right;
+    }
+
+    .market-current-price {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .market-change {
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+
+    .market-change.positive {
+        color: var(--accent-color);
+    }
+
+    .market-change.negative {
+        color: var(--danger-color);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Chargement des données du marché
+    async function loadMarketData() {
+        try {
+            const response = await fetch('/api/market_data');
+            const data = await response.json();
+
+            const marketList = document.getElementById('marketList');
+
+            if (data.market_data) {
+                marketList.innerHTML = '';
+
+                data.market_data.slice(0, 8).forEach(coin => {
+                    const changeClass = coin.price_change_24h >= 0 ? 'positive' : 'negative';
+                    const changeIcon = coin.price_change_24h >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                    const changeColor = coin.price_change_24h >= 0 ? 'var(--accent-color)' : 'var(--danger-color)';
+
+                    const item = document.createElement('div');
+                    item.className = 'market-item';
+
+                    item.innerHTML = `
+                    <div class="crypto-icon" style="width: 40px; height: 40px; font-size: 1rem;">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="market-crypto-info">
+                        <div class="market-crypto-name">${coin.symbol}</div>
+                        <div class="market-crypto-symbol">${coin.name}</div>
+                    </div>
+                    <div class="market-price">
+                        <div class="market-current-price">$${coin.current_price.toLocaleString()}</div>
+                        <div class="market-change ${changeClass}" style="color: ${changeColor}">
+                            <i class="fas ${changeIcon}"></i>
+                            ${Math.abs(coin.price_change_24h).toFixed(2)}%
+                        </div>
+                    </div>
+                `;
+
+                    marketList.appendChild(item);
+                });
+            }
+        } catch (error) {
+            console.error('Erreur chargement marché:', error);
+            document.getElementById('marketList').innerHTML =
+                '<p class="text-center text-secondary">Erreur de chargement</p>';
+        }
+    }
+
+    // Graphiques allocation
+    function createAllocationChart() {
+        const cryptoCards = document.querySelectorAll('.crypto-card');
+        if (cryptoCards.length === 0) return;
+
+        const ctx = document.getElementById('allocationChart').getContext('2d');
+
+        const labels = [];
+        const data = [];
+        const colors = [
+            '#667eea', '#764ba2', '#f093fb', '#f5576c',
+            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+            '#fa709a', '#fee140'
+        ];
+
+        cryptoCards.forEach((card, index) => {
+            const cryptoData = card.dataset.crypto.split('|');
+            if (cryptoData.length >= 3) {
+                labels.push(cryptoData[0]); // name
+                data.push(parseFloat(cryptoData[2]) || 0); // current_value
+            }
+        });
+
+        if (data.length === 0) return;
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors.slice(0, data.length),
+                    borderWidth: 0,
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false
+                },
+                animation: {
+                    animateScale: true,
+                    animateRotate: true
+                }
+            }
+        });
+    }
+
+    // Animation des cartes crypto
+    function animateCryptoCards() {
+        const cards = document.querySelectorAll('.crypto-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function () {
+        loadMarketData();
+        createAllocationChart();
+        animateCryptoCards();
+
+        // Actualisation automatique du marché toutes les 5 minutes
+        setInterval(loadMarketData, 300000);
+
+        // Gestion du bouton de rafraîchissement
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function () {
+                const icon = this.querySelector('i');
+                icon.classList.add('fa-spin');
+
+                // Animation de retour après 2 secondes
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                }, 2000);
+            });
+        }
+    });
+</script>
+{% endblock %}

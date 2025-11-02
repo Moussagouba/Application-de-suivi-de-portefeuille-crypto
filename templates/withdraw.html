@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}Retirer Crypto - Portefeuille Crypto{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="form-header text-center mb-6">
+        <h1>
+            <i class="fas fa-wallet"></i>
+            Retirer / Vendre des Cryptomonnaies
+        </h1>
+        <p>Retirez une partie ou la totalité de vos cryptomonnaies</p>
+    </div>
+
+    {% if cryptos|length == 0 %}
+    <div class="empty-state">
+        <i class="fas fa-wallet"></i>
+        <p>Aucune cryptomonnaie dans votre portefeuille</p>
+        <a href="{{ url_for('add_crypto') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Ajouter des cryptomonnaies
+        </a>
+    </div>
+    {% else %}
+
+    <!-- Vue d'ensemble du portefeuille -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-pie"></i>
+                Vue d'ensemble du Portefeuille
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 grid-cols-3">
+                <div class="text-center">
+                    <div class="text-secondary mb-1">Valeur Totale</div>
+                    <div class="text-2xl font-bold text-primary">${{ "%.2f"|format(total_value|default(0)) }}</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-secondary mb-1">Nombre de Cryptos</div>
+                    <div class="text-2xl font-bold">{{ cryptos|length }}</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-secondary mb-1">Performance</div>
+                    <div class="text-2xl font-bold {{ 'profit' if total_profit_loss >= 0 else 'loss' }}">
+                        {{ "%.1f"|format(total_profit_loss_percentage|default(0)) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulaire de retrait -->
+    <div class="form-container">
+        <div class="card-header mb-4">
+            <h3 class="card-title">
+                <i class="fas fa-exchange-alt"></i>
+                Formulaire de Retrait
+            </h3>
+        </div>
+
+        <form method="POST" id="withdrawForm">
+            <!-- Sélection de la cryptomonnaie -->
+            <div class="form-group">
+                <label for="crypto_id" class="form-label">
+                    <i class="fas fa-coins"></i>
+                    Sélectionner une Cryptomonnaie
+                </label>
+                <select class="form-input" id="crypto_id" name="crypto_id" required onchange="updateCryptoInfo()">
+                    <option value="">Choisissez une cryptomonnaie...</option>
+                    {% for crypto in cryptos %}
+                    <option value="{{ crypto.id }}" data-symbol="{{ crypto.symbol }}" data-name="{{ crypto.name }}"
+                        data-quantity="{{ crypto.quantity }}" data-current-price="{{ crypto.current_price }}"
+                        data-value="{{ crypto.current_value }}">
+                        {{ crypto.name }} ({{ crypto.symbol }}) - {{ crypto.quantity }} disponibles
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="form-help">Sélectionnez la cryptomonnaie que vous souhaitez retirer</div>
+            </div>
+
+            <!-- Informations de la crypto sélectionnée -->
+            <div id="cryptoInfo" class="card mb-6" style="display: none;">
+                <div class="card-body">
+                    <div class="grid grid-cols-1 grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-secondary mb-1">Quantité Possédée</div>
+                            <div class="text-lg font-semibold" id="ownedQuantity">-</div>
+                        </div>
+                        <div>
+                            <div class="text-secondary mb-1">Prix Actuel</div>
+                            <div class="text-lg font-semibold text-primary" id="currentPrice">-</div>
+                        </div>
+                        <div>
+                            <div class="text-secondary mb-1">Valeur Totale</div>
+                            <div class="text-lg font-semibold" id="totalValue">-</div>
+                        </div>
+                        <div>
+                            <div class="text-secondary mb-1">Gain/Perte</div>
+                            <div class="text-lg font-semibold" id="profitLoss">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantité à retirer -->
+            <div class="form-group">
+                <label for="quantity" class="form-label">
+                    <i class="fas fa-balance-scale"></i>
+                    Quantité à Retirer
+                </label>
+                <div class="relative">
+                    <input type="number" class="form-input" id="quantity" name="quantity" step="0.00000001" min="0"
+                        max="0" placeholder="0.00" required oninput="updateWithdrawalValue()">
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary" id="maxQuantity">
+                        Max: 0
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <button type="button" class="btn btn-sm btn-ghost" onclick="setMaxQuantity()">
+                        <i class="fas fa-arrow-up"></i>
+                        Tout retirer
+                    </button>
+                    <button type="button" class="btn btn-sm btn-ghost" onclick="setHalfQuantity()">
+                        <i class="fas fa-arrow-right"></i>
+                        50%
+                    </button>
+                    <button type="button" class="btn btn-sm btn-ghost" onclick="setQuarterQuantity()">
+                        <i class="fas fa-arrow-right"></i>
+                        25%
+                    </button>
+                </div>
+            </div>
+
+            <!-- Prix de retrait -->
+            <div class="form-group">
+                <label for="current_price" class="form-label">
+                    <i class="fas fa-dollar-sign"></i>
+                    Prix de Retrait ($)
+                </label>
+                <input type="number" class="form-input" id="current_price" name="current_price" step="0.01" min="0"
+                    required readonly>
+                <div class="form-help">Le prix actuel de la cryptomonnaie sélectionnée</div>
+            </div>
+
+            <!-- Valeur du retrait -->
+            <div class="card mb-6">
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="text-secondary mb-2">Valeur du Retrait</div>
+                        <div class="text-3xl font-bold text-primary" id="withdrawalValue">$0.00</div>
+                        <div class="text-sm text-secondary mt-1" id="withdrawalDetails">
+                            Sélectionnez une cryptomonnaie pour voir les détails
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation et actions -->
+            <div class="form-group">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center gap-2 text-yellow-800 mb-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span class="font-semibold">Important</span>
+                    </div>
+                    <div class="text-sm text-yellow-700">
+                        Cette action est irréversible. Assurez-vous de bien vérifier les informations avant de
+                        confirmer.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="confirmWithdraw" required>
+                        <span class="text-sm">Je confirme vouloir retirer cette quantité de cryptomonnaie</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="button-group">
+                <button type="submit" class="btn btn-danger" id="withdrawBtn">
+                    <i class="fas fa-wallet"></i>
+                    Confirmer le Retrait
+                </button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des cryptomonnaies disponibles -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-list"></i>
+                Mes Cryptomonnaies
+            </h3>
+        </div>
+        <div class="card-body">
+            {% for crypto in cryptos %}
+            <div class="crypto-card mb-4">
+                <div class="crypto-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="crypto-info">
+                    <div class="crypto-name">{{ crypto.name }}</div>
+                    <div class="crypto-symbol">{{ crypto.symbol }}</div>
+                    <div class="crypto-details">
+                        {{ crypto.quantity }} × ${{ "%.2f"|format(crypto.purchase_price) }}
+                    </div>
+                </div>
+                <div class="crypto-value text-right">
+                    <div class="current-price">${{ "%.2f"|format(crypto.current_price) }}</div>
+                    <div class="profit-loss-small {{ 'profit' if crypto.profit_loss >= 0 else 'loss' }}">
+                        {% if crypto.profit_loss >= 0 %}+{% endif %}
+                        ${{ "%.2f"|format(crypto.profit_loss) }}
+                    </div>
+                    <div class="text-sm text-secondary mt-1">
+                        Valeur: ${{ "%.2f"|format(crypto.current_value) }}
+                    </div>
+                    <button class="btn btn-sm btn-danger mt-2" onclick="selectCrypto('{{ crypto.id }}')">
+                        <i class="fas fa-wallet"></i>
+                        Retirer
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .relative {
+        position: relative;
+    }
+
+    .absolute {
+        position: absolute;
+    }
+
+    .right-3 {
+        right: 0.75rem;
+    }
+
+    .top-1\/2 {
+        top: 50%;
+    }
+
+    .transform {
+        transform: translateY(-50%);
+    }
+
+    .-translate-y-1\/2 {
+        transform: translateY(-50%);
+    }
+
+    .bg-yellow-50 {
+        background-color: #fffbeb;
+    }
+
+    .border-yellow-200 {
+        border-color: #facc15;
+    }
+
+    .rounded-lg {
+        border-radius: var(--border-radius-lg);
+    }
+
+    .text-yellow-800 {
+        color: #92400e;
+    }
+
+    .text-yellow-700 {
+        color: #a16207;
+    }
+
+    .max-quantity-hint {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8rem;
+        color: var(--text-light);
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    function updateCryptoInfo() {
+        const select = document.getElementById('crypto_id');
+        const option = select.selectedOptions[0];
+
+        if (option.value === '') {
+            document.getElementById('cryptoInfo').style.display = 'none';
+            document.getElementById('current_price').value = '';
+            document.getElementById('quantity').max = '0';
+            document.getElementById('quantity').placeholder = 'Sélectionnez une crypto...';
+            document.getElementById('withdrawalValue').textContent = '$0.00';
+            return;
+        }
+
+        const symbol = option.dataset.symbol;
+        const name = option.dataset.name;
+        const quantity = parseFloat(option.dataset.quantity);
+        const currentPrice = parseFloat(option.dataset.currentPrice);
+        const value = parseFloat(option.dataset.value);
+        const purchasePrice = value / quantity; // Calcul approximatif
+
+        // Afficher les informations
+        document.getElementById('cryptoInfo').style.display = 'block';
+        document.getElementById('ownedQuantity').textContent = `${quantity} ${symbol}`;
+        document.getElementById('currentPrice').textContent = `$${currentPrice.toLocaleString()}`;
+        document.getElementById('totalValue').textContent = `$${value.toLocaleString()}`;
+
+        const profitLoss = value - (quantity * purchasePrice);
+        const profitLossElement = document.getElementById('profitLoss');
+        profitLossElement.textContent = `$${profitLoss.toLocaleString()}`;
+        profitLossElement.className = `text-lg font-semibold ${profitLoss >= 0 ? 'profit' : 'loss'}`;
+
+        // Configurer le formulaire
+        document.getElementById('current_price').value = currentPrice;
+        document.getElementById('quantity').max = quantity;
+        document.getElementById('quantity').placeholder = `0.00 (max: ${quantity})`;
+        document.getElementById('maxQuantity').textContent = `Max: ${quantity}`;
+
+        updateWithdrawalValue();
+    }
+
+    function updateWithdrawalValue() {
+        const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+        const price = parseFloat(document.getElementById('current_price').value) || 0;
+        const select = document.getElementById('crypto_id');
+        const option = select.selectedOptions[0];
+
+        if (!option || option.value === '') {
+            document.getElementById('withdrawalValue').textContent = '$0.00';
+            return;
+        }
+
+        const symbol = option.dataset.symbol;
+        const withdrawalValue = quantity * price;
+
+        document.getElementById('withdrawalValue').textContent = `$${withdrawalValue.toLocaleString()}`;
+        document.getElementById('withdrawalDetails').textContent =
+            `${quantity} ${symbol} × $${price.toLocaleString()} = $${withdrawalValue.toLocaleString()}`;
+    }
+
+    function setMaxQuantity() {
+        const select = document.getElementById('crypto_id');
+        const option = select.selectedOptions[0];
+
+        if (option && option.value !== '') {
+            const maxQuantity = parseFloat(option.dataset.quantity);
+            document.getElementById('quantity').value = maxQuantity;
+            updateWithdrawalValue();
+        }
+    }
+
+    function setHalfQuantity() {
+        const select = document.getElementById('crypto_id');
+        const option = select.selectedOptions[0];
+
+        if (option && option.value !== '') {
+            const maxQuantity = parseFloat(option.dataset.quantity);
+            document.getElementById('quantity').value = (maxQuantity / 2).toFixed(8);
+            updateWithdrawalValue();
+        }
+    }
+
+    function setQuarterQuantity() {
+        const select = document.getElementById('crypto_id');
+        const option = select.selectedOptions[0];
+
+        if (option && option.value !== '') {
+            const maxQuantity = parseFloat(option.dataset.quantity);
+            document.getElementById('quantity').value = (maxQuantity / 4).toFixed(8);
+            updateWithdrawalValue();
+        }
+    }
+
+    function selectCrypto(cryptoId) {
+        document.getElementById('crypto_id').value = cryptoId;
+        updateCryptoInfo();
+
+        // Scroll vers le formulaire
+        document.getElementById('withdrawForm').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+
+    // Gestion de la soumission du formulaire
+    document.getElementById('withdrawForm').addEventListener('submit', function (e) {
+        const confirmCheckbox = document.getElementById('confirmWithdraw');
+
+        if (!confirmCheckbox.checked) {
+            e.preventDefault();
+            alert('Veuillez confirmer votre intention de retirer cette cryptomonnaie.');
+            return;
+        }
+
+        const quantity = parseFloat(document.getElementById('quantity').value);
+        const select = document.getElementById('crypto_id');
+        const option = select.selectedOptions[0];
+        const maxQuantity = parseFloat(option.dataset.quantity);
+
+        if (quantity > maxQuantity) {
+            e.preventDefault();
+            alert('La quantité sélectionnée dépasse celle disponible.');
+            return;
+        }
+
+        if (quantity <= 0) {
+            e.preventDefault();
+            alert('Veuillez entrer une quantité valide.');
+            return;
+        }
+
+        // Animation du bouton de soumission
+        const submitBtn = document.getElementById('withdrawBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traitement...';
+        submitBtn.disabled = true;
+    });
+
+    // Calcul automatique du total investi pour l'affichage
+    document.addEventListener('DOMContentLoaded', function () {
+        // Ces valeurs peuvent être calculées côté serveur ou ajoutées au template
+        // Page de retrait chargée
+        console.log('Page de retrait chargée');
+    });
+</script>
+{% endblock %}

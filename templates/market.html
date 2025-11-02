@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}Marché - Portefeuille Crypto{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <h1 class="mb-6 text-center">
+        <i class="fas fa-chart-bar"></i>
+        Vue d'ensemble du Marché
+    </h1>
+
+    <!-- En-tête avec données en temps réel -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-clock"></i>
+                Données en Temps Réel
+            </h3>
+            <button class="btn btn-sm btn-primary" onclick="loadMarketData()">
+                <i class="fas fa-sync-alt"></i>
+                Actualiser
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="text-center text-secondary" id="lastUpdate">
+                Dernière mise à jour: {{ moment().format('HH:mm:ss') if false else 'Chargement...' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Cryptomonnaies -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-line"></i>
+                Top Cryptomonnaies
+            </h3>
+            <div class="text-secondary">
+                Marché: USD | CoinGecko API
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="market-list" id="marketList">
+                <div class="text-center text-secondary">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Chargement des données du marché...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique des tendances -->
+    <div class="card mt-6">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-area"></i>
+                Graphique des Tendances
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="text-center text-secondary">
+                <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                <p>Graphiques avancés bientôt disponibles</p>
+                <p>Suivez l'évolution des prix des cryptomonnaies principales</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .market-list {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .market-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+
+    .market-item:last-child {
+        border-bottom: none;
+    }
+
+    .market-item:hover {
+        background: var(--bg-secondary);
+    }
+
+    .market-rank {
+        width: 30px;
+        text-align: center;
+        font-weight: 600;
+        color: var(--text-light);
+        font-size: 0.9rem;
+    }
+
+    .market-crypto-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .market-crypto-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .market-crypto-symbol {
+        font-size: 0.8rem;
+        color: var(--text-light);
+        text-transform: uppercase;
+    }
+
+    .market-price {
+        text-align: right;
+        min-width: 120px;
+    }
+
+    .market-current-price {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .market-change {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.25rem;
+    }
+
+    .market-change.positive {
+        color: var(--accent-color);
+    }
+
+    .market-change.negative {
+        color: var(--danger-color);
+    }
+
+    .market-volume {
+        text-align: right;
+        min-width: 100px;
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    .market-mcap {
+        text-align: right;
+        min-width: 120px;
+        font-size: 0.8rem;
+        color: var(--text-light);
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        border-top-color: var(--primary-color);
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .market-item {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .market-price,
+        .market-volume,
+        .market-mcap {
+            min-width: auto;
+            font-size: 0.75rem;
+        }
+
+        .market-crypto-info {
+            flex-basis: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+
+<script>
+    // Chargement des données du marché
+    async function loadMarketData() {
+        const marketList = document.getElementById('marketList');
+        const lastUpdate = document.getElementById('lastUpdate');
+
+        try {
+            // Afficher le spinner de chargement
+            marketList.innerHTML = `
+            <div class="text-center text-secondary">
+                <div class="loading-spinner"></div>
+                <p>Chargement des données du marché...</p>
+            </div>
+        `;
+
+            // Simulation de données de marché (remplacer par votre API réelle)
+            const marketData = [
+                {
+                    rank: 1,
+                    name: 'Bitcoin',
+                    symbol: 'BTC',
+                    current_price: 43250.50,
+                    price_change_24h: 2.34,
+                    market_cap: 845000000000,
+                    volume_24h: 25000000000
+                },
+                {
+                    rank: 2,
+                    name: 'Ethereum',
+                    symbol: 'ETH',
+                    current_price: 2850.75,
+                    price_change_24h: 1.87,
+                    market_cap: 342000000000,
+                    volume_24h: 15000000000
+                },
+                {
+                    rank: 3,
+                    name: 'Cardano',
+                    symbol: 'ADA',
+                    current_price: 0.52,
+                    price_change_24h: -1.23,
+                    market_cap: 18500000000,
+                    volume_24h: 500000000
+                },
+                {
+                    rank: 4,
+                    name: 'Polkadot',
+                    symbol: 'DOT',
+                    current_price: 7.85,
+                    price_change_24h: 3.45,
+                    market_cap: 9800000000,
+                    volume_24h: 300000000
+                },
+                {
+                    rank: 5,
+                    name: 'Chainlink',
+                    symbol: 'LINK',
+                    current_price: 15.42,
+                    price_change_24h: -0.89,
+                    market_cap: 8500000000,
+                    volume_24h: 400000000
+                }
+            ];
+
+            // Mettre à jour l'heure
+            const now = new Date();
+            lastUpdate.textContent = `Dernière mise à jour: ${now.toLocaleTimeString('fr-FR')}`;
+
+            // Afficher les données
+            marketList.innerHTML = '';
+
+            marketData.forEach(coin => {
+                const changeClass = coin.price_change_24h >= 0 ? 'positive' : 'negative';
+                const changeIcon = coin.price_change_24h >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                const changeColor = coin.price_change_24h >= 0 ? 'var(--accent-color)' : 'var(--danger-color)';
+
+                const item = document.createElement('div');
+                item.className = 'market-item';
+
+                item.innerHTML = `
+                <div class="market-rank">#${coin.rank}</div>
+                <div class="market-crypto-info">
+                    <div class="crypto-icon" style="width: 35px; height: 35px; font-size: 0.9rem;">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div>
+                        <div class="market-crypto-name">${coin.name}</div>
+                        <div class="market-crypto-symbol">${coin.symbol}</div>
+                    </div>
+                </div>
+                <div class="market-price">
+                    <div class="market-current-price">$${coin.current_price.toLocaleString()}</div>
+                    <div class="market-change ${changeClass}" style="color: ${changeColor}">
+                        <i class="fas ${changeIcon}"></i>
+                        ${Math.abs(coin.price_change_24h).toFixed(2)}%
+                    </div>
+                </div>
+                <div class="market-volume">
+                    <div>Vol: $${(coin.volume_24h / 1000000000).toFixed(1)}B</div>
+                </div>
+                <div class="market-mcap">
+                    <div>Cap: $${(coin.market_cap / 1000000000).toFixed(0)}B</div>
+                </div>
+            `;
+
+                marketList.appendChild(item);
+            });
+
+            // Ajouter la possibilité de recharger
+            const refreshBtn = document.querySelector('.card-header .btn');
+            if (refreshBtn) {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser';
+            }
+
+        } catch (error) {
+            console.error('Erreur chargement marché:', error);
+            marketList.innerHTML = `
+            <div class="text-center text-secondary">
+                <i class="fas fa-exclamation-triangle" style="color: var(--danger-color);"></i>
+                <p>Erreur de chargement des données</p>
+                <button class="btn btn-sm btn-secondary" onclick="loadMarketData()">
+                    Réessayer
+                </button>
+            </div>
+        `;
+        }
+    }
+
+    // Mise à jour automatique toutes les 5 minutes
+    function startAutoRefresh() {
+        setInterval(() => {
+            loadMarketData();
+        }, 300000);
+    }
+
+    // Animation des éléments au chargement
+    function animateMarketItems() {
+        const items = document.querySelectorAll('.market-item');
+        items.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function () {
+        loadMarketData();
+        startAutoRefresh();
+
+        // Animation des cartes
+        setTimeout(animateMarketItems, 500);
+    });
+
+    // Gestion des erreurs réseau
+    window.addEventListener('offline', function () {
+        const marketList = document.getElementById('marketList');
+        marketList.innerHTML = `
+        <div class="text-center text-secondary">
+            <i class="fas fa-wifi" style="color: var(--danger-color);"></i>
+            <p>Connexion internet requise</p>
+        </div>
+    `;
+    });
+
+    window.addEventListener('online', function () {
+        loadMarketData();
+    });
+</script>
+{% endblock %}

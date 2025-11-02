@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Portefeuille Crypto{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <h1 class="mb-6 text-center">
+        <i class="fas fa-chart-line"></i>
+        Analytics du Portefeuille
+    </h1>
+
+    {% if not has_data %}
+    <div class="empty-state">
+        <i class="fas fa-chart-line"></i>
+        <p>Aucune donnée disponible pour l'analyse</p>
+        <a href="{{ url_for('add_crypto') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Ajouter des cryptomonnaies
+        </a>
+    </div>
+    {% else %}
+
+    <!-- Résumé des performances -->
+    <div class="grid grid-cols-1 grid-cols-4 mb-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-secondary mb-1">Valeur Totale</div>
+                <div class="text-2xl font-bold text-primary">${{ "%.2f"|format(total_portfolio_value) }}</div>
+            </div>
+        </div>
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-secondary mb-1">Investi</div>
+                <div class="text-2xl font-bold">${{ "%.2f"|format(total_invested) }}</div>
+            </div>
+        </div>
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-secondary mb-1">Gain/Perte</div>
+                <div class="text-2xl font-bold {{ 'profit' if total_profit_loss >= 0 else 'loss' }}">
+                    {{ '$%.2f'|format(total_profit_loss) }}
+                </div>
+            </div>
+        </div>
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="text-secondary mb-1">Performance</div>
+                <div class="text-2xl font-bold {{ 'profit' if total_profit_loss >= 0 else 'loss' }}">
+                    {{ '%.1f'|format((total_profit_loss/total_invested*100) if total_invested > 0 else 0) }}%
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="grid grid-cols-1 grid-cols-2 mb-6">
+        <!-- Graphique de répartition -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Répartition du Portefeuille
+                </h3>
+            </div>
+            <div class="card-body">
+                <canvas id="allocationChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Graphique de performance -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Performance par Crypto
+                </h3>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Détails des performances -->
+    <div class="grid grid-cols-1 grid-cols-2 mb-6">
+        <!-- Meilleure performance -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-arrow-up text-success"></i>
+                    Meilleure Performance
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if best_performer %}
+                <div class="crypto-card">
+                    <div class="crypto-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="crypto-info">
+                        <div class="crypto-name">{{ best_performer.name }}</div>
+                        <div class="crypto-symbol">{{ best_performer.symbol }}</div>
+                        <div class="text-sm text-secondary">
+                            {{ "%.2f"|format(best_performance) }}% de gain
+                        </div>
+                    </div>
+                    <div class="crypto-value text-right">
+                        <div class="current-price">${{ "%.2f"|format(best_performer.current_price) }}</div>
+                        <div class="text-sm text-success">
+                            +${{ "%.2f"|format(best_performer.profit_loss) }}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-secondary">Aucune performance à afficher</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Moins bonne performance -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-arrow-down text-danger"></i>
+                    Moins Bonne Performance
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if worst_performer %}
+                <div class="crypto-card">
+                    <div class="crypto-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="crypto-info">
+                        <div class="crypto-name">{{ worst_performer.name }}</div>
+                        <div class="crypto-symbol">{{ worst_performer.symbol }}</div>
+                        <div class="text-sm text-secondary">
+                            {{ "%.2f"|format(worst_performance) }}% de perte
+                        </div>
+                    </div>
+                    <div class="crypto-value text-right">
+                        <div class="current-price">${{ "%.2f"|format(worst_performer.current_price) }}</div>
+                        <div class="text-sm text-danger">
+                            ${{ "%.2f"|format(worst_performer.profit_loss) }}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center text-secondary">Aucune performance à afficher</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau détaillé -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-table"></i>
+                Détail par Cryptomonnaie
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table class="performance-table">
+                    <thead>
+                        <tr>
+                            <th>Crypto</th>
+                            <th>Quantité</th>
+                            <th>Prix d'Achat</th>
+                            <th>Prix Actuel</th>
+                            <th>Valeur</th>
+                            <th>Gain/Perte</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for crypto in cryptos %}
+                        <tr>
+                            <td>
+                                <div class="crypto-name-cell">
+                                    <div class="crypto-icon-sm">
+                                        <i class="fas fa-coins"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold">{{ crypto.name }}</div>
+                                        <div class="text-sm text-secondary">{{ crypto.symbol }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ "%.8f"|format(crypto.quantity) }}</td>
+                            <td>${{ "%.2f"|format(crypto.purchase_price) }}</td>
+                            <td>${{ "%.2f"|format(crypto.current_price) }}</td>
+                            <td class="font-semibold">${{ "%.2f"|format(crypto.current_value) }}</td>
+                            <td class="{{ 'text-success' if crypto.profit_loss >= 0 else 'text-danger' }}">
+                                {{ '$%.2f'|format(crypto.profit_loss) }}
+                            </td>
+                            <td class="{{ 'text-success' if crypto.profit_loss >= 0 else 'text-danger' }}">
+                                {{ '%.2f'|format(crypto.profit_loss_percentage) }}%
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+
+<style>
+.table-container {
+    overflow-x: auto;
+}
+
+.performance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.performance-table th,
+.performance-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.performance-table th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.performance-table tr:hover {
+    background: var(--bg-secondary);
+}
+
+.crypto-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.crypto-icon-sm {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.8rem;
+}
+
+.text-success {
+    color: var(--accent-color);
+}
+
+.text-danger {
+    color: var(--danger-color);
+}
+
+@media (max-width: 768px) {
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .performance-table {
+        font-size: 0.8rem;
+    }
+    
+    .performance-table th,
+    .performance-table td {
+        padding: 0.5rem;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Données des cryptomonnaies - insérées de manière sécurisée
+const cryptoData = {{ cryptos | map(attribute='symbol') | list | tojson }};
+const currentValues = {{ cryptos | map(attribute='current_value') | list | tojson }};
+const profitLossPercentages = {{ cryptos | map(attribute='profit_loss_percentage') | list | tojson }};
+const profitLossValues = {{ cryptos | map(attribute='profit_loss') | list | tojson }};
+
+// Graphique de répartition
+function createAllocationChart() {
+    const ctx = document.getElementById('allocationChart');
+    if (!ctx) return;
+    
+    const colors = [
+        '#667eea', '#764ba2', '#f093fb', '#f5576c',
+        '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
+    ];
+    
+    new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: cryptoData,
+            datasets: [{
+                data: currentValues,
+                backgroundColor: colors.slice(0, cryptoData.length),
+                borderWidth: 0,
+                hoverBorderWidth: 2,
+                hoverBorderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Graphique de performance
+function createPerformanceChart() {
+    const ctx = document.getElementById('performanceChart');
+    if (!ctx) return;
+    
+    const colors = profitLossValues.map(value => 
+        value >= 0 ? '#11998e' : '#fc466b'
+    );
+    
+    new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: cryptoData,
+            datasets: [{
+                data: profitLossPercentages,
+                backgroundColor: colors,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+    createAllocationChart();
+    createPerformanceChart();
+});
+</script>
+{% endblock %}
