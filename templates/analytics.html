@@ -52,35 +52,6 @@
         </div>
     </div>
 
-    <!-- Graphiques -->
-    <div class="grid grid-cols-1 grid-cols-2 mb-6">
-        <!-- Graphique de répartition -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-chart-pie"></i>
-                    Répartition du Portefeuille
-                </h3>
-            </div>
-            <div class="card-body">
-                <canvas id="allocationChart" width="400" height="300"></canvas>
-            </div>
-        </div>
-
-        <!-- Graphique de performance -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-chart-bar"></i>
-                    Performance par Crypto
-                </h3>
-            </div>
-            <div class="card-body">
-                <canvas id="performanceChart" width="400" height="300"></canvas>
-            </div>
-        </div>
-    </div>
-
     <!-- Détails des performances -->
     <div class="grid grid-cols-1 grid-cols-2 mb-6">
         <!-- Meilleure performance -->
@@ -206,12 +177,80 @@
         </div>
     </div>
 
+    <!-- Message informatif sur les graphiques -->
+    <div class="card mt-6">
+        <div class="card-body text-center">
+            <i class="fas fa-chart-pie" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+            <p class="text-secondary">Les graphiques sont disponibles sur la page d'accueil</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i>
+                Retour à l'accueil
+            </a>
+        </div>
+        /* Centrage des cartes et grilles */
+        .grid-cols-1.grid-cols-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        }
+
+        .grid-cols-1.grid-cols-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        }
+
+        /* Centrage du contenu dans les cartes */
+        .card-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        }
+
+        /* Centrage spécifique pour les statistiques */
+        .card.text-center {
+        text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+        .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        }
+
+        .grid-cols-1.grid-cols-2 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        }
+
+        .performance-table {
+        font-size: 0.8rem;
+        }
+
+        .performance-table th,
+        .performance-table td {
+        padding: 0.5rem;
+        }
+        }
+
+        @media (max-width: 480px) {
+        .grid-cols-4 {
+        grid-template-columns: 1fr;
+        }
+        }
+    </div>
+
     {% endif %}
 </div>
 
 <style>
     .table-container {
-        overflow-x: auto;
+        overflow: hidden;
     }
 
     .performance-table {
@@ -263,6 +302,15 @@
         color: var(--danger-color);
     }
 
+    .text-primary {
+        color: var(--primary-color);
+    }
+
+    .text-2xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+
     @media (max-width: 768px) {
         .grid-cols-4 {
             grid-template-columns: repeat(2, 1fr);
@@ -280,109 +328,4 @@
     }
 </style>
 
-{% endblock %}
-
-{% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Graphique de répartition
-    function createAllocationChart() {
-        const ctx = document.getElementById('allocationChart').getContext('2d');
-
-        const labels = [];
-        const data = [];
-        const colors = [
-            '#667eea', '#764ba2', '#f093fb', '#f5576c',
-            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7'
-        ];
-
-        {% for crypto in cryptos %}
-        labels.push('{{ crypto.symbol }}');
-        data.push({{ crypto.current_value }});
-    {% endfor %}
-
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: colors.slice(0, data.length),
-                borderWidth: 0,
-                hoverBorderWidth: 2,
-                hoverBorderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20
-                    }
-                }
-            }
-        }
-    });
-}
-
-    // Graphique de performance
-    function createPerformanceChart() {
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-
-        const labels = [];
-        const data = [];
-        const colors = [];
-
-        {% for crypto in cryptos %}
-        labels.push('{{ crypto.symbol }}');
-        data.push({{ crypto.profit_loss_percentage }});
-    colors.push({{ crypto.profit_loss }} >= 0 ? '#11998e' : '#fc466b');
-    {% endfor %}
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: colors,
-                borderRadius: 8,
-                borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-}
-
-    // Initialisation
-    document.addEventListener('DOMContentLoaded', function () {
-        createAllocationChart();
-        createPerformanceChart();
-    });
-</script>
 {% endblock %}

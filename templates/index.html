@@ -38,26 +38,14 @@
     </a>
 </div>
 
-<!-- Graphiques et analytics -->
+<!-- Statistiques -->
 {% if cryptos|length > 0 %}
 <div class="grid grid-cols-1 grid-cols-2 mb-6">
-    <!-- Graphique de répartition -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-chart-pie"></i>
-                Répartition du Portefeuille
-            </h3>
-        </div>
-        <canvas id="allocationChart" width="400" height="300"></canvas>
-    </div>
-
-    <!-- Statistiques -->
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">
                 <i class="fas fa-chart-bar"></i>
-                Statistiques
+                Statistiques du Portefeuille
             </h3>
         </div>
         <div id="portfolioStats">
@@ -70,7 +58,7 @@
             <div class="stat-item mb-4">
                 <div class="flex items-center justify-between">
                     <span class="text-secondary">Investi</span>
-                    <span class="font-semibold">${{ "%.2f"|format(total_invested|default(0)) }}</span>
+                    <span class="font-semibold">${{ "%.2f"|format(total_portfolio_value - total_profit_loss) }}</span>
                 </div>
             </div>
             <div class="stat-item mb-4">
@@ -80,6 +68,38 @@
                         {% if total_profit_loss >= 0 %}+{% endif %}
                         ${{ "%.2f"|format(total_profit_loss) }}
                     </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique de performance -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-line"></i>
+                Évolution de la Performance
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="performance-info text-center">
+                <div class="mb-4">
+                    <div class="text-2xl font-bold {{ 'profit' if total_profit_loss >= 0 else 'loss' }}">
+                        {% if total_profit_loss >= 0 %}+{% endif %}
+                        {{ "%.2f"|format(total_profit_loss_percentage) }}%
+                    </div>
+                    <div class="text-secondary">Rendement Total</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-lg font-semibold">{{ cryptos|length }}</div>
+                        <div class="text-secondary text-sm">Cryptos</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-lg font-semibold">${{ "%.0f"|format(total_portfolio_value) }}</div>
+                        <div class="text-secondary text-sm">Valeur Total</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -100,8 +120,7 @@
     {% if cryptos|length > 0 %}
     <div class="crypto-list">
         {% for crypto in cryptos %}
-        <div class="crypto-card"
-            data-crypto="{{ crypto.name }}|{{ crypto.symbol }}|{{ crypto.current_value|round(2) }}">
+        <div class="crypto-card">
             <div class="crypto-icon">
                 <i class="fas fa-coins"></i>
             </div>
@@ -196,7 +215,7 @@
 
     .market-list {
         max-height: 400px;
-        overflow-y: auto;
+        overflow: hidden;
     }
 
     .market-item {
@@ -248,11 +267,87 @@
     .market-change.negative {
         color: var(--danger-color);
     }
+
+    /* Centrage des cartes et grilles */
+    .grid-cols-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .grid-cols-1.grid-cols-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Centrage du contenu dans les cartes */
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Centrage spécifique pour les statistiques */
+    #portfolioStats {
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .performance-info {
+        width: 100%;
+        padding: 1rem 0;
+    }
+
+    .grid-cols-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .grid-cols-3 {
+            grid-template-columns: 1fr;
+            max-width: 300px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .grid-cols-1.grid-cols-2 {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        #portfolioStats {
+            max-width: 280px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #portfolioStats {
+            max-width: 250px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Chargement des données du marché
     async function loadMarketData() {
@@ -300,69 +395,6 @@
         }
     }
 
-    // Graphiques allocation
-    function createAllocationChart() {
-        const cryptoCards = document.querySelectorAll('.crypto-card');
-        if (cryptoCards.length === 0) return;
-
-        const ctx = document.getElementById('allocationChart').getContext('2d');
-
-        const labels = [];
-        const data = [];
-        const colors = [
-            '#667eea', '#764ba2', '#f093fb', '#f5576c',
-            '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
-            '#fa709a', '#fee140'
-        ];
-
-        cryptoCards.forEach((card, index) => {
-            const cryptoData = card.dataset.crypto.split('|');
-            if (cryptoData.length >= 3) {
-                labels.push(cryptoData[0]); // name
-                data.push(parseFloat(cryptoData[2]) || 0); // current_value
-            }
-        });
-
-        if (data.length === 0) return;
-
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    backgroundColor: colors.slice(0, data.length),
-                    borderWidth: 0,
-                    hoverBorderWidth: 2,
-                    hoverBorderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                interaction: {
-                    intersect: false
-                },
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
-                }
-            }
-        });
-    }
-
     // Animation des cartes crypto
     function animateCryptoCards() {
         const cards = document.querySelectorAll('.crypto-card');
@@ -380,8 +412,9 @@
 
     // Initialisation
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM chargé, initialisation...');
+
         loadMarketData();
-        createAllocationChart();
         animateCryptoCards();
 
         // Actualisation automatique du marché toutes les 5 minutes

@@ -170,6 +170,7 @@ def index():
     cryptos = Crypto.query.all()
     total_portfolio_value = 0
     total_profit_loss = 0
+    total_invested = 0
     
     # Calcule les valeurs sans les stocker dans la base
     for crypto in cryptos:
@@ -186,20 +187,23 @@ def index():
         # Calcule les valeurs (propriétés calculées)
         crypto_value = crypto.current_value  # Utilise la propriété calculée
         crypto_profit_loss = crypto.profit_loss  # Utilise la propriété calculée
+        crypto_invested = crypto.quantity * crypto.purchase_price  # Calcul direct
         
         total_portfolio_value += crypto_value
         total_profit_loss += crypto_profit_loss
+        total_invested += crypto_invested
     
     # Sauvegarde des mises à jour
     db.session.commit()
     
     total_profit_loss_percentage = (total_profit_loss/total_portfolio_value*100) if total_portfolio_value > 0 else 0
     
-    return render_template('index.html', 
-                         cryptos=cryptos, 
+    return render_template('index.html',
+                         cryptos=cryptos,
                          total_portfolio_value=total_portfolio_value,
                          total_profit_loss=total_profit_loss,
-                         total_profit_loss_percentage=total_profit_loss_percentage)
+                         total_profit_loss_percentage=total_profit_loss_percentage,
+                         total_invested=total_invested)
 
 @app.route('/search_crypto', methods=['POST'])
 def search_crypto():
