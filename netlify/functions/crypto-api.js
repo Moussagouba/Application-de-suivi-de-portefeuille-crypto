@@ -8,7 +8,7 @@ const { neon } = require('@neondatabase/serverless');
 if (process.env.NODE_ENV !== 'production') {
     const fs = require('fs');
     const path = require('path');
-    const envPath = path.join(__dirname, '../../.env');
+    const envPath = path.join(__dirname, '../../backend/.env');
     if (fs.existsSync(envPath)) {
         const envContent = fs.readFileSync(envPath, 'utf8');
         const envVars = envContent.split('\n').filter(line => line.includes('='));

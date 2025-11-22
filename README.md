@@ -42,7 +42,8 @@
 - **Flask-Login 0.6.3** : Gestion des sessions utilisateur
 - **Flask-SQLAlchemy 3.0.5** : ORM pour la base de données
 - **Werkzeug 2.3.7** : Sécurité et hachage des mots de passe
-- **SQLite** : Base de données locale
+- **PostgreSQL (Neon)** : Base de données cloud
+- **psycopg2-binary 2.9.10** : Driver PostgreSQL
 
 ### Frontend
 - **HTML5/CSS3** : Interface moderne et responsive
@@ -51,18 +52,27 @@
 
 ### Intégrations
 - **CoinGecko API** : Données de marché en temps réel
+- **Neon PostgreSQL** : Base de données cloud serverless
+- **Netlify Functions** : API serverless pour les prix crypto
 - **Capacitor** : Framework pour conversion mobile
 
 ## 📁 Structure du Projet
 
 ```
 crypto-portfolio/
-├── app.py                 # Application Flask principale
-├── models.py              # Modèles de base de données
-├── requirements.txt       # Dépendances Python
-├── build_apk.sh          # Script de build APK
-├── init_db.py            # Initialisation de la base
-├── templates/            # Templates HTML
+├── backend/              # Code backend Python
+│   ├── app.py            # Application Flask principale
+│   ├── models.py         # Modèles de base de données
+│   ├── requirements.txt  # Dépendances Python backend
+│   ├── .env              # Variables d'environnement
+│   └── Procfile          # Configuration Heroku
+├── frontend/             # Interface utilisateur
+│   └── index.html        # Application SPA complète
+├── netlify/              # Fonctions serverless Netlify
+│   └── functions/
+│       ├── crypto-api.js # API pour prix crypto
+│       └── package.json  # Dépendances Node.js
+├── templates/            # Templates HTML (Flask)
 │   ├── base.html         # Template de base
 │   ├── index.html        # Page d'accueil
 │   ├── analytics.html    # Analytics du portefeuille
@@ -74,8 +84,14 @@ crypto-portfolio/
 │   │   └── style.css     # Styles CSS
 │   └── js/
 │       └── chart.js      # Scripts JavaScript
-└── instance/
-    └── crypto_portfolio.db  # Base de données SQLite
+├── instance/             # Base de données locale
+│   └── crypto_portfolio.db  # SQLite (fallback)
+├── main.py               # Point d'entrée principal
+├── requirements.txt      # Dépendances Python (racine)
+├── netlify.toml          # Configuration Netlify
+├── runtime.txt           # Version Python pour Netlify
+├── build_apk.sh          # Script de build APK
+└── init_db.py            # Initialisation de la base
 ```
 
 ## 🚀 Installation et Lancement
@@ -106,6 +122,19 @@ python app.py
 ```
 
 L'application sera accessible sur : `http://127.0.0.1:8080`
+
+### Déploiement sur Netlify (Recommandé)
+
+1. **Connecter le repository** sur Netlify
+2. **Variables d'environnement** :
+   - `DATABASE_URL` : URL de connexion Neon PostgreSQL
+   - `SECRET_KEY` : Clé secrète pour Flask
+3. **Build settings** :
+   - **Build command** : `echo 'Static frontend ready'`
+   - **Publish directory** : `frontend`
+4. **Fonctions serverless** : Automatiquement déployées depuis `netlify/functions/`
+
+L'application sera accessible sur votre domaine Netlify avec API fonctionnelle !
 
 ## 🔑 Première Utilisation - Authentification
 
