@@ -1,16 +1,133 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
-from models import db, Crypto
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_sqlalchemy import SQLAlchemy
+from models import create_models
 import requests
 import json
 import time
 from datetime import datetime
 
+# Initialiser Flask
 app = Flask(__name__)
 app.secret_key = 'crypto_portfolio_mobile_2025_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///crypto_portfolio.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_SORT_KEYS'] = False
-db.init_app(app)
+
+# Initialiser SQLAlchemy
+db = SQLAlchemy(app)
+
+# Créer les modèles avec l'instance db
+User, Crypto = create_models(db)
+
+# Configuration Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Veuillez vous connecter pour accéder à cette page.'
+login_manager.login_message_category = 'info'
+
+# Rendre current_user disponible dans tous les templates
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.context_processor
+def inject_current_user():
+    """Rendre current_user disponible dans tous les templates"""
+    from flask_login import current_user
+    return dict(current_user=current_user)
+
+# Initialisation automatique de la base de données
+def init_database():
+    """Créer toutes les tables si elles n'existent pas"""
+    try:
+        with app.app_context():
+            db.create_all()
+            print("Base de donnees initialisee avec succes!")
+    except Exception as e:
+        print(f"Erreur lors de l'initialisation de la base: {e}")
+
+# Initialiser la base de données au démarrage
+init_database()
+# Routes d'authentification
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Inscription d'un nouvel utilisateur"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        
+        # Validation
+        if not username or not email or not password:
+            flash('Tous les champs sont requis.', 'error')
+            return redirect(url_for('register'))
+        
+        if password != confirm_password:
+            flash('Les mots de passe ne correspondent pas.', 'error')
+            return redirect(url_for('register'))
+        
+        # Vérifier si l'utilisateur existe déjà
+        if User.query.filter_by(username=username).first():
+            flash('Ce nom d\'utilisateur est déjà pris.', 'error')
+            return redirect(url_for('register'))
+        
+        if User.query.filter_by(email=email).first():
+            flash('Cette adresse email est déjà utilisée.', 'error')
+            return redirect(url_for('register'))
+        
+        # Créer le nouvel utilisateur
+        user = User(username=username, email=email)
+        user.set_password(password)
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Compte créé avec succès! Vous pouvez maintenant vous connecter.', 'success')
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Connexion d'un utilisateur existant"""
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        user = User.query.filter_by(username=username).first()
+        
+        if user and user.check_password(password):
+            login_user(user)
+            flash('Connexion réussie!', 'success')
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('index'))
+        else:
+            flash('Nom d\'utilisateur ou mot de passe incorrect.', 'error')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    """Déconnexion"""
+    logout_user()
+    flash('Vous avez été déconnecté avec succès.', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/profile')
+@login_required
+def profile():
+    """Profil utilisateur"""
+    return render_template('profile.html')
 
 # API simple CoinGecko
 COINGECKO_API = "https://api.coingecko.com/api/v3"
@@ -165,9 +282,10 @@ def search_crypto_coinGecko(query):
         return []
 
 @app.route('/')
+@login_required
 def index():
     """Page d'accueil - Tableau de bord principal"""
-    cryptos = Crypto.query.all()
+    cryptos = Crypto.query.filter_by(user_id=current_user.id).all()
     total_portfolio_value = 0
     total_profit_loss = 0
     total_invested = 0
@@ -222,6 +340,7 @@ def api_crypto_price(symbol):
     return jsonify(price_info)
 
 @app.route('/add', methods=['GET', 'POST'])
+@login_required
 def add_crypto():
     """Ajouter une nouvelle cryptomonnaie"""
     if request.method == 'POST':
@@ -231,25 +350,39 @@ def add_crypto():
             quantity = float(request.form['quantity'])
             purchase_price = float(request.form['purchase_price'])
             
-            # Récupère le prix actuel automatiquement
-            price_info = get_crypto_price_simple(symbol)
-            current_price = price_info['price']
+            # Vérifier si la crypto existe déjà pour cet utilisateur
+            existing_crypto = Crypto.query.filter_by(
+                user_id=current_user.id,
+                symbol=symbol
+            ).first()
             
-            # Créer la nouvelle cryptomonnaie
-            new_crypto = Crypto(
-                name=name,
-                symbol=symbol,
-                quantity=quantity,
-                purchase_price=purchase_price,
-                current_price=current_price,
-                price_change_24h=price_info['change_24h'],
-                last_updated=datetime.now()
-            )
+            if existing_crypto:
+                # Mettre à jour la quantité existante
+                existing_crypto.quantity += quantity
+                existing_crypto.purchase_price = (existing_crypto.purchase_price + purchase_price) / 2
+                existing_crypto.last_updated = datetime.now()
+                flash(f'{name} mise à jour avec succès! Quantité totale: {existing_crypto.quantity}', 'success')
+            else:
+                # Récupère le prix actuel automatiquement
+                price_info = get_crypto_price_simple(symbol)
+                current_price = price_info['price']
+                
+                # Créer la nouvelle cryptomonnaie
+                new_crypto = Crypto(
+                    name=name,
+                    symbol=symbol,
+                    quantity=quantity,
+                    purchase_price=purchase_price,
+                    current_price=current_price,
+                    price_change_24h=price_info['change_24h'],
+                    last_updated=datetime.now(),
+                    user_id=current_user.id
+                )
+                
+                db.session.add(new_crypto)
+                flash(f'{name} ajoutée avec succès! Prix actuel: ${current_price:.2f}', 'success')
             
-            db.session.add(new_crypto)
             db.session.commit()
-            
-            flash(f'{name} ajoutée avec succès! Prix actuel: ${current_price:.2f}', 'success')
             return redirect(url_for('index'))
             
         except Exception as e:
@@ -260,35 +393,16 @@ def add_crypto():
 
 @app.route('/edit/<int:crypto_id>', methods=['GET', 'POST'])
 def edit_crypto(crypto_id):
-    """Éditer une cryptomonnaie"""
-    crypto = Crypto.query.get_or_404(crypto_id)
-    
-    if request.method == 'POST':
-        try:
-            crypto.name = request.form['name']
-            crypto.symbol = request.form['symbol'].upper()
-            crypto.quantity = float(request.form['quantity'])
-            crypto.purchase_price = float(request.form['purchase_price'])
-            
-            # Met à jour le prix actuel
-            price_info = get_crypto_price_simple(crypto.symbol)
-            crypto.current_price = price_info['price']
-            crypto.price_change_24h = price_info['change_24h']
-            crypto.last_updated = datetime.now()
-            
-            db.session.commit()
-            flash(f'{crypto.name} modifiée avec succès!', 'success')
-            return redirect(url_for('index'))
-            
-        except Exception as e:
-            flash(f'Erreur lors de la modification: {str(e)}', 'error')
-    
-    return render_template('edit_crypto.html', crypto=crypto)
+    """Éditer une cryptomonnaie - FONCTIONNALITÉ DÉSACTIVÉE"""
+    # Redirige vers l'accueil avec un message
+    flash('La modification des cryptomonnaies est désactivée. Vous pouvez uniquement ajouter et supprimer des cryptos.', 'info')
+    return redirect(url_for('index'))
 
 @app.route('/delete/<int:crypto_id>', methods=['POST'])
+@login_required
 def delete_crypto(crypto_id):
     """Supprimer une cryptomonnaie"""
-    crypto = Crypto.query.get_or_404(crypto_id)
+    crypto = Crypto.query.filter_by(id=crypto_id, user_id=current_user.id).first_or_404()
     crypto_name = crypto.name
     
     try:
@@ -301,10 +415,11 @@ def delete_crypto(crypto_id):
     return redirect(url_for('index'))
 
 @app.route('/refresh_prices', methods=['POST'])
+@login_required
 def refresh_prices():
     """Rafraîchir tous les prix"""
     try:
-        cryptos = Crypto.query.all()
+        cryptos = Crypto.query.filter_by(user_id=current_user.id).all()
         updated_count = 0
         
         for crypto in cryptos:
@@ -323,10 +438,11 @@ def refresh_prices():
     return redirect(url_for('index'))
 
 @app.route('/api/portfolio_stats')
+@login_required
 def api_portfolio_stats():
     """API pour les statistiques du portefeuille"""
     try:
-        cryptos = Crypto.query.all()
+        cryptos = Crypto.query.filter_by(user_id=current_user.id).all()
         
         if not cryptos:
             return jsonify({
@@ -337,7 +453,7 @@ def api_portfolio_stats():
                 'worst_performer': None
             })
         
-        total_value = sum(c.current_value for c in cryptos)  # Utilise les propriétés calculées
+        total_value = sum(c.current_value for c in cryptos)
         total_invested = sum(c.quantity * c.purchase_price for c in cryptos)
         total_profit_loss = total_value - total_invested
         
@@ -345,7 +461,7 @@ def api_portfolio_stats():
         performers = []
         for crypto in cryptos:
             if crypto.purchase_price > 0:
-                performance = crypto.profit_loss_percentage  # Utilise la propriété calculée
+                performance = crypto.profit_loss_percentage
                 performers.append((crypto, performance))
         
         if performers:
@@ -430,14 +546,16 @@ def api_market_data():
         })
 
 @app.route('/settings')
+@login_required
 def settings():
     """Page des paramètres"""
     return render_template('settings.html')
 
 @app.route('/analytics')
+@login_required
 def portfolio_analytics():
     """Page d'analytics du portefeuille"""
-    cryptos = Crypto.query.all()
+    cryptos = Crypto.query.filter_by(user_id=current_user.id).all()
     
     if not cryptos:
         return render_template('analytics.html',
@@ -473,14 +591,16 @@ def portfolio_analytics():
                          worst_performance=worst_performer[1] if worst_performer else 0)
 
 @app.route('/market')
+@login_required
 def market_overview():
     """Page de vue d'ensemble du marché"""
     return render_template('market.html')
 
 @app.route('/withdraw', methods=['GET', 'POST'])
+@login_required
 def withdraw_crypto():
     """Page de retrait/vente de cryptomonnaies"""
-    cryptos = Crypto.query.all()
+    cryptos = Crypto.query.filter_by(user_id=current_user.id).all()
     
     # Calculer les statistiques du portefeuille
     total_portfolio_value = sum(c.current_value for c in cryptos) if cryptos else 0
@@ -494,7 +614,7 @@ def withdraw_crypto():
             quantity_to_withdraw = float(request.form['quantity'])
             current_price = float(request.form['current_price'])
             
-            crypto = Crypto.query.get_or_404(crypto_id)
+            crypto = Crypto.query.filter_by(id=crypto_id, user_id=current_user.id).first_or_404()
             
             if quantity_to_withdraw > crypto.quantity:
                 flash('Quantité insuffisante dans le portefeuille', 'error')
@@ -528,6 +648,4 @@ def withdraw_crypto():
                          total_profit_loss_percentage=total_profit_loss_percentage)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(host='127.0.0.1', port=8080, debug=True, use_reloader=False)

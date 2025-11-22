@@ -1,0 +1,15 @@
+{
+    "name": "crypto-portfolio-netlify",
+    "version": "1.0.0",
+    "description": "Application de suivi de portefeuille crypto - Version Netlify",
+    "scripts": {
+        "build": "echo 'No build needed for static files - Frontend ready'",
+        "dev": "python -m http.server 8000",
+        "start": "serve -s dist -p 3000"
+    },
+    "dependencies": {},
+    "devDependencies": {},
+    "engines": {
+        "node": ">=16.0.0"
+    }
+}

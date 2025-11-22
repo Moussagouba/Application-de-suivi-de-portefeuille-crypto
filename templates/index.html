@@ -40,7 +40,7 @@
 
 <!-- Statistiques -->
 {% if cryptos|length > 0 %}
-<div class="grid grid-cols-1 grid-cols-2 mb-6">
+<div class="stats-grid mb-6">
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">
@@ -91,14 +91,22 @@
                     <div class="text-secondary">Rendement Total</div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="text-center">
+                <div class="stats-grid-4 mt-4">
+                    <div class="stat-box text-center">
                         <div class="text-lg font-semibold">{{ cryptos|length }}</div>
                         <div class="text-secondary text-sm">Cryptos</div>
                     </div>
-                    <div class="text-center">
+                    <div class="stat-box text-center">
                         <div class="text-lg font-semibold">${{ "%.0f"|format(total_portfolio_value) }}</div>
                         <div class="text-secondary text-sm">Valeur Total</div>
+                    </div>
+                    <div class="stat-box text-center">
+                        <div class="text-lg font-semibold">{{ "%.1f"|format(total_profit_loss_percentage) }}%</div>
+                        <div class="text-secondary text-sm">Performance</div>
+                    </div>
+                    <div class="stat-box text-center">
+                        <div class="text-lg font-semibold">${{ "%.0f"|format(total_invested|default(0)) }}</div>
+                        <div class="text-secondary text-sm">Investi</div>
                     </div>
                 </div>
             </div>
@@ -145,9 +153,6 @@
                 </div>
                 {% endif %}
                 <div class="crypto-actions mt-2">
-                    <a href="{{ url_for('edit_crypto', crypto_id=crypto.id) }}" class="btn btn-sm btn-ghost">
-                        <i class="fas fa-edit"></i>
-                    </a>
                     <form method="POST" action="{{ url_for('delete_crypto', crypto_id=crypto.id) }}"
                         style="display: inline;">
                         <button type="submit" class="btn btn-sm btn-danger"

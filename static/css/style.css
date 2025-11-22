@@ -756,6 +756,58 @@ body {
     text-align: center;
 }
 
+/* Grilles des statistiques */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Centrage du contenu dans les cartes */
+.card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+/* Styles spécifiques pour les statistiques centrées */
+#portfolioStats {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.performance-info {
+    width: 100%;
+    padding: 1rem 0;
+}
+
+/* Boîtes de statistiques */
+.stat-box {
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.stat-box:hover {
+    background: var(--bg-tertiary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
 /* Nouveaux styles pour la répartition */
 .allocation-item {
     margin-bottom: 1rem;
@@ -823,14 +875,14 @@ body {
         font-size: 1rem;
     }
 
-    /* Nouvelles règles responsive */
-    .grid-cols-4 {
-        grid-template-columns: repeat(2, 1fr);
+    /* Nouvelles règles responsive pour grilles */
+    .stats-grid {
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
 
-    .grid-cols-1.grid-cols-2 {
-        grid-template-columns: 1fr;
+    .stats-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
 
@@ -862,7 +914,7 @@ body {
     }
 
     /* Nouvelles règles pour très petit écran */
-    .grid-cols-4 {
+    .stats-grid-4 {
         grid-template-columns: 1fr;
     }
 }

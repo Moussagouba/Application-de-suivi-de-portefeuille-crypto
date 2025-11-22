@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Portefeuille Crypto - Accueil</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Variables CSS */
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #11998e;
+            --success-color: #38ef7d;
+            --danger-color: #fc466b;
+            --warning-color: #feca57;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --text-light: #a0aec0;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --bg-tertiary: #edf2f7;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 12px;
+            --border-radius-lg: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Reset et base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .app-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .menu-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+        }
+
+        .header-logo i {
+            color: var(--primary-color);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-time {
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .header-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .header-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Contenu principal */
+        .main-content {
+            margin-top: 70px;
+            padding-bottom: 80px;
+            min-height: calc(100vh - 150px);
+        }
+
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Portfolio Summary */
+        .portfolio-summary {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-summary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+        }
+
+        .total-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profit-loss {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: var(--transition);
+        }
+
+        .profit {
+            background: linear-gradient(135deg, var(--accent-color), var(--success-color));
+            color: white;
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+        }
+
+        .loss {
+            background: linear-gradient(135deg, var(--danger-color), #ff6b9d);
+            color: white;
+            box-shadow: 0 4px 15px rgba(252, 70, 107, 0.3);
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+            justify-content: center;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+        }
+
+        /* Boutons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--accent-color), var(--success-color));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #ff6b9d);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 1rem;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Crypto Cards */
+        .crypto-card {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .crypto-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+        }
+
+        .crypto-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .crypto-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+
+        .crypto-info {
+            flex: 1;
+        }
+
+        .crypto-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .crypto-symbol {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .crypto-details {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .crypto-value {
+            text-align: right;
+        }
+
+        .current-price {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .profit-loss-small {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+        }
+
+        .crypto-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            z-index: 100;
+            padding: 0.5rem 0;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: var(--transition);
+            font-size: 0.75rem;
+        }
+
+        .bottom-nav-item:hover {
+            color: var(--text-secondary);
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .bottom-nav-item i {
+            font-size: 1.2rem;
+        }
+
+        /* States */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-light);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Market List */
+        .market-list {
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .market-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .market-item:last-child {
+            border-bottom: none;
+        }
+
+        .market-crypto-info {
+            flex: 1;
+        }
+
+        .market-crypto-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .market-crypto-symbol {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+        }
+
+        .market-price {
+            text-align: right;
+        }
+
+        .market-current-price {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .market-change {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .market-change.positive {
+            color: var(--accent-color);
+        }
+
+        .market-change.negative {
+            color: var(--danger-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-cols-3 {
+                grid-template-columns: 1fr;
+                max-width: 300px;
+                margin: 0 auto 1.5rem;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Utilitaires */
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Contenu principal -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <!-- Résumé du portefeuille -->
+            <div class="portfolio-summary fade-in">
+                <div class="total-value" id="totalValue">$0.00</div>
+                <div class="profit-loss profit" id="profitLoss">
+                    <i class="fas fa-arrow-up"></i>
+                    $0.00 (0.00%)
+                </div>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="grid grid-cols-3 mb-6">
+                <button class="btn btn-primary" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualiser
+                </button>
+                <a href="#" class="btn btn-success" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i>
+                    Ajouter
+                </a>
+                <a href="#" class="btn btn-danger" onclick="openWithdrawModal()">
+                    <i class="fas fa-wallet"></i>
+                    Retirer
+                </a>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Statistiques du Portefeuille
+                    </h3>
+                </div>
+                <div id="portfolioStats">
+                    <div class="stat-item mb-4">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span class="text-secondary">Valeur totale</span>
+                            <span class="font-semibold" id="totalValueStats">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="stat-item mb-4">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span class="text-secondary">Investi</span>
+                            <span class="font-semibold" id="totalInvested">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="stat-item mb-4">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <span class="text-secondary">Performance</span>
+                            <span class="font-semibold profit" id="totalPerformance">+$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des cryptomonnaies -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Mes Cryptomonnaies
+                    </h3>
+                    <span class="text-secondary" id="cryptoCount">0 crypto</span>
+                </div>
+
+                <div class="crypto-list" id="cryptoList">
+                    <!-- Les cryptos seront ajoutées ici par JavaScript -->
+                </div>
+            </div>
+
+            <!-- Marché en direct -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        Marché en Direct
+                    </h3>
+                    <button class="btn btn-ghost btn-sm" onclick="loadMarketData()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+                <div class="market-list" id="marketList">
+                    <p class="text-center text-secondary">Chargement des données du marché...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Navigation en bas (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="#" class="bottom-nav-item active" onclick="showPage('dashboard')">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="#" class="bottom-nav-item" onclick="openAddModal()">
+            <i class="fas fa-plus"></i>
+            <span>Ajouter</span>
+        </a>
+        <a href="#" class="bottom-nav-item" onclick="showPage('analytics')">
+            <i class="fas fa-chart-pie"></i>
+            <span>Stats</span>
+        </a>
+        <a href="#" class="bottom-nav-item" onclick="showSettings()">
+            <i class="fas fa-cog"></i>
+            <span>Paramètres</span>
+        </a>
+    </nav>
+
+    <script>
+        // Configuration de l'API
+        const API_BASE = '/.netlify/functions';
+
+        // State management
+        let portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio')) || [];
+        let user = JSON.parse(localStorage.getItem('cryptoUser')) || null;
+
+        // Fonction pour appeler l'API
+        async function callAPI(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('Erreur API:', error);
+                return null;
+            }
+        }
+
+        // Initialisation de l'utilisateur si nécessaire
+        function initUser() {
+            if (!user) {
+                user = {
+                    id: Date.now(),
+                    username: 'Utilisateur',
+                    email: 'demo@example.com',
+                    created: new Date().toISOString()
+                };
+                localStorage.setItem('cryptoUser', JSON.stringify(user));
+            }
+        }
+
+        // Charger les données du marché
+        async function loadMarketData() {
+            const marketList = document.getElementById('marketList');
+
+            try {
+                const data = await callAPI('/crypto-api/market_data');
+
+                if (data && data.market_data) {
+                    marketList.innerHTML = '';
+
+                    data.market_data.slice(0, 8).forEach(coin => {
+                        const changeClass = coin.price_change_24h >= 0 ? 'positive' : 'negative';
+                        const changeIcon = coin.price_change_24h >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                        const changeColor = coin.price_change_24h >= 0 ? 'var(--accent-color)' : 'var(--danger-color)';
+
+                        const item = document.createElement('div');
+                        item.className = 'market-item';
+
+                        item.innerHTML = `
+                            <div class="crypto-icon" style="width: 40px; height: 40px; font-size: 1rem;">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="market-crypto-info">
+                                <div class="market-crypto-name">${coin.symbol}</div>
+                                <div class="market-crypto-symbol">${coin.name}</div>
+                            </div>
+                            <div class="market-price">
+                                <div class="market-current-price">$${coin.current_price.toLocaleString()}</div>
+                                <div class="market-change ${changeClass}" style="color: ${changeColor}">
+                                    <i class="fas ${changeIcon}"></i>
+                                    ${Math.abs(coin.price_change_24h).toFixed(2)}%
+                                </div>
+                            </div>
+                        `;
+
+                        marketList.appendChild(item);
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur chargement marché:', error);
+                marketList.innerHTML = '<p class="text-center text-secondary">Erreur de chargement</p>';
+            }
+        }
+
+        // Calculer les statistiques du portefeuille
+        function calculatePortfolioStats() {
+            let totalValue = 0;
+            let totalInvested = 0;
+
+            portfolio.forEach(crypto => {
+                totalInvested += crypto.quantity * crypto.purchase_price;
+                totalValue += crypto.quantity * (crypto.currentPrice || crypto.purchase_price);
+            });
+
+            const totalProfitLoss = totalValue - totalInvested;
+            const profitLossPercentage = totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0;
+
+            return {
+                totalValue,
+                totalInvested,
+                totalProfitLoss,
+                profitLossPercentage
+            };
+        }
+
+        // Afficher les statistiques
+        function displayPortfolioStats() {
+            const stats = calculatePortfolioStats();
+
+            document.getElementById('totalValue').textContent = `$${stats.totalValue.toFixed(2)}`;
+            document.getElementById('totalValueStats').textContent = `$${stats.totalValue.toFixed(2)}`;
+            document.getElementById('totalInvested').textContent = `$${stats.totalInvested.toFixed(2)}`;
+            document.getElementById('totalPerformance').textContent =
+                `${stats.totalProfitLoss >= 0 ? '+' : ''}$${Math.abs(stats.totalProfitLoss).toFixed(2)}`;
+
+            const profitLossElement = document.getElementById('profitLoss');
+            profitLossElement.className = `profit-loss ${stats.totalProfitLoss >= 0 ? 'profit' : 'loss'}`;
+            profitLossElement.innerHTML = `
+                <i class="fas fa-${stats.totalProfitLoss >= 0 ? 'arrow-up' : 'arrow-down'}"></i>
+                $${Math.abs(stats.totalProfitLoss).toFixed(2)} (${Math.abs(stats.profitLossPercentage).toFixed(2)}%)
+            `;
+        }
+
+        // Afficher la liste des cryptos
+        function displayCryptoList() {
+            const cryptoList = document.getElementById('cryptoList');
+            const cryptoCount = document.getElementById('cryptoCount');
+
+            cryptoCount.textContent = `${portfolio.length} crypto${portfolio.length !== 1 ? 's' : ''}`;
+
+            if (portfolio.length === 0) {
+                cryptoList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-coins"></i>
+                        <p>Aucune cryptomonnaie dans votre portefeuille</p>
+                        <a href="#" class="btn btn-primary" onclick="openAddModal()">
+                            <i class="fas fa-plus"></i>
+                            Ajouter votre première crypto
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            cryptoList.innerHTML = '';
+
+            portfolio.forEach((crypto, index) => {
+                const currentValue = crypto.quantity * (crypto.currentPrice || crypto.purchase_price);
+                const investedValue = crypto.quantity * crypto.purchase_price;
+                const profitLoss = currentValue - investedValue;
+                const profitLossPercentage = investedValue > 0 ? (profitLoss / investedValue) * 100 : 0;
+
+                const card = document.createElement('div');
+                card.className = 'crypto-card fade-in';
+                card.style.animationDelay = `${index * 0.1}s`;
+
+                card.innerHTML = `
+                    <div class="crypto-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="crypto-info">
+                        <div class="crypto-name">${crypto.name}</div>
+                        <div class="crypto-symbol">${crypto.symbol}</div>
+                        <div class="crypto-details">
+                            ${crypto.quantity} × $${crypto.purchase_price.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="crypto-value">
+                        <div class="current-price">$${(crypto.currentPrice || crypto.purchase_price).toFixed(2)}</div>
+                        <div class="profit-loss-small ${profitLoss >= 0 ? 'profit' : 'loss'}">
+                            ${profitLoss >= 0 ? '+' : ''}$${Math.abs(profitLoss).toFixed(2)}
+                        </div>
+                        <div class="crypto-actions mt-2">
+                            <button class="btn btn-sm btn-danger" onclick="removeCrypto('${crypto.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                cryptoList.appendChild(card);
+            });
+        }
+
+        // Mettre à jour les prix des cryptos
+        async function updateCryptoPrices() {
+            for (let crypto of portfolio) {
+                try {
+                    const data = await callAPI(`/crypto-api/crypto_price/${crypto.symbol}`);
+                    if (data && data.price) {
+                        crypto.currentPrice = data.price;
+                    }
+                } catch (error) {
+                    console.error(`Erreur prix ${crypto.symbol}:`, error);
+                }
+            }
+
+            localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+            displayCryptoList();
+            displayPortfolioStats();
+        }
+
+        // Ajouter une crypto
+        function openAddModal() {
+            const name = prompt('Nom de la cryptomonnaie:');
+            if (!name) return;
+
+            const symbol = prompt('Symbole (ex: BTC):');
+            if (!symbol) return;
+
+            const quantity = parseFloat(prompt('Quantité:'));
+            if (!quantity || quantity <= 0) return;
+
+            const purchasePrice = parseFloat(prompt('Prix d\'achat ($):'));
+            if (!purchasePrice || purchasePrice <= 0) return;
+
+            const crypto = {
+                id: Date.now().toString(),
+                name: name,
+                symbol: symbol.toUpperCase(),
+                quantity: quantity,
+                purchase_price: purchasePrice,
+                currentPrice: purchasePrice,
+                added: new Date().toISOString()
+            };
+
+            portfolio.push(crypto);
+            localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+
+            displayCryptoList();
+            displayPortfolioStats();
+
+            alert(`${name} ajouté avec succès!`);
+        }
+
+        // Supprimer une crypto
+        function removeCrypto(cryptoId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer cette crypto?')) return;
+
+            portfolio = portfolio.filter(crypto => crypto.id !== cryptoId);
+            localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+
+            displayCryptoList();
+            displayPortfolioStats();
+        }
+
+        // Retirer des cryptos
+        function openWithdrawModal() {
+            if (portfolio.length === 0) {
+                alert('Aucune crypto dans votre portefeuille');
+                return;
+            }
+
+            const cryptoList = portfolio.map((crypto, index) =>
+                `${index + 1}. ${crypto.name} (${crypto.symbol}) - ${crypto.quantity} unités`
+            ).join('\n');
+
+            const choice = prompt(`Choisissez une crypto à retirer:\n${cryptoList}\n\nNuméro:`);
+            const index = parseInt(choice) - 1;
+
+            if (isNaN(index) || index < 0 || index >= portfolio.length) return;
+
+            const quantity = parseFloat(prompt('Quantité à retirer:'));
+            if (!quantity || quantity <= 0) return;
+
+            const crypto = portfolio[index];
+            if (quantity > crypto.quantity) {
+                alert('Quantité insuffisante');
+                return;
+            }
+
+            crypto.quantity -= quantity;
+
+            if (crypto.quantity <= 0.001) {
+                portfolio.splice(index, 1);
+            }
+
+            localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+
+            displayCryptoList();
+            displayPortfolioStats();
+
+            alert(`Retrait effectué avec succès!`);
+        }
+
+        // Actualiser les données
+        function refreshData() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            const icon = refreshBtn.querySelector('i');
+
+            icon.classList.add('fa-spin');
+
+            Promise.all([
+                updateCryptoPrices(),
+                loadMarketData()
+            ]).finally(() => {
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                }, 2000);
+            });
+        }
+
+        // Afficher les paramètres
+        function showSettings() {
+            alert('Paramètres: Bientôt disponible');
+        }
+
+        // Afficher une page spécifique
+        function showPage(page) {
+            alert(`Page ${page}: Bientôt disponible`);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('DOM chargé, initialisation...');
+
+            initUser();
+            loadMarketData();
+            displayCryptoList();
+            displayPortfolioStats();
+
+            // Gestion du bouton de rafraîchissement
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.addEventListener('click', refreshData);
+
+            // Actualisation automatique du marché toutes les 5 minutes
+            setInterval(loadMarketData, 300000);
+
+            // Animation des éléments
+            const cards = document.querySelectorAll('.crypto-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+
+</html>

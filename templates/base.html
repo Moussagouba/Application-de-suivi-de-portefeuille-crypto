@@ -59,8 +59,15 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <div class="user-details">
-                        <div class="user-name">Mon Portefeuille</div>
-                        <div class="user-status">Connecté</div>
+                        <div class="user-name">{{ current_user.username if current_user.is_authenticated else 'Invité'
+                            }}</div>
+                        <div class="user-status">
+                            {% if current_user.is_authenticated %}
+                            <span style="color: #28a745;">●</span> Connecté
+                            {% else %}
+                            <span style="color: #dc3545;">●</span> Hors ligne
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 <button class="sidebar-close" id="sidebarClose">
@@ -102,18 +109,26 @@
                     </a>
                 </li>
                 <li class="menu-item">
-                    <a href="{{ url_for('settings') }}"
-                        class="menu-link {{ 'active' if request.endpoint == 'settings' else '' }}">
-                        <i class="fas fa-cog"></i>
-                        <span>Paramètres</span>
-                        <div class="menu-indicator"></div>
-                    </a>
-                </li>
-                <li class="menu-item">
                     <a href="{{ url_for('withdraw_crypto') }}"
                         class="menu-link {{ 'active' if request.endpoint == 'withdraw_crypto' else '' }}">
                         <i class="fas fa-wallet"></i>
                         <span>Retirer</span>
+                        <div class="menu-indicator"></div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ url_for('profile') }}"
+                        class="menu-link {{ 'active' if request.endpoint == 'profile' else '' }}">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Mon Profil</span>
+                        <div class="menu-indicator"></div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="{{ url_for('settings') }}"
+                        class="menu-link {{ 'active' if request.endpoint == 'settings' else '' }}">
+                        <i class="fas fa-cog"></i>
+                        <span>Paramètres</span>
                         <div class="menu-indicator"></div>
                     </a>
                 </li>

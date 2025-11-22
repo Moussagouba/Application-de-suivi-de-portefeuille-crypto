@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Profil - Portefeuille Crypto{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="profile-info">
+            <h2>{{ current_user.username }}</h2>
+            <p class="profile-email">{{ current_user.email }}</p>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Membre depuis</span>
+                    <span class="stat-value">{{ current_user.created_at.strftime('%d/%m/%Y') }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Cryptos dans le portefeuille</span>
+                    <span class="stat-value">{{ cryptos|length if cryptos is defined else 0 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <!-- Informations du compte -->
+        <div class="profile-section">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                Informations du compte
+            </h3>
+            <div class="profile-card">
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-user"></i>
+                        Nom d'utilisateur
+                    </span>
+                    <span class="info-value">{{ current_user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-envelope"></i>
+                        Email
+                    </span>
+                    <span class="info-value">{{ current_user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-calendar-plus"></i>
+                        Date d'inscription
+                    </span>
+                    <span class="info-value">{{ current_user.created_at.strftime('%d %B %Y') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">
+                        <i class="fas fa-shield-alt"></i>
+                        Statut
+                    </span>
+                    <span class="info-value status-active">
+                        <i class="fas fa-check-circle"></i>
+                        Compte vérifié
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions du profil -->
+        <div class="profile-section">
+            <h3>
+                <i class="fas fa-cog"></i>
+                Actions du compte
+            </h3>
+            <div class="profile-actions">
+                <button class="action-btn" onclick="changePassword()">
+                    <i class="fas fa-key"></i>
+                    <span>Changer le mot de passe</span>
+                </button>
+                <button class="action-btn" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    <span>Exporter mes données</span>
+                </button>
+                <a href="{{ url_for('logout') }}" class="action-btn logout-btn"
+                    onclick="return confirm('Êtes-vous sûr de vouloir vous déconnecter ?')">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Se déconnecter</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 15px;
+        padding: 2rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        animation: slideInDown 0.5s ease-out;
+    }
+
+    .profile-avatar {
+        font-size: 4rem;
+        opacity: 0.9;
+    }
+
+    .profile-info h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .profile-email {
+        margin: 0 0 1rem;
+        opacity: 0.8;
+        font-size: 1rem;
+    }
+
+    .profile-stats {
+        display: flex;
+        gap: 2rem;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        opacity: 0.7;
+    }
+
+    .stat-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .profile-section {
+        margin-bottom: 2rem;
+    }
+
+    .profile-section h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .profile-card,
+    .profile-actions {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .info-value {
+        color: #7f8c8d;
+    }
+
+    .status-active {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .profile-actions {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .action-btn:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+        transform: translateY(-1px);
+    }
+
+    .logout-btn {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .logout-btn:hover {
+        background: #fff5f5;
+        border-color: #dc3545;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 0.5rem;
+        }
+
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .profile-stats {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    function changePassword() {
+        alert('Fonctionnalité de changement de mot de passe en cours de développement');
+    }
+
+    function exportData() {
+        alert('Fonctionnalité d\'export de données en cours de développement');
+    }
+</script>
+{% endblock %}

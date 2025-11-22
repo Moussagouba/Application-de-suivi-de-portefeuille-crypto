@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""
+Script d'initialisation de la base de données pour l'application Portefeuille Crypto
+"""
+
+import os
+from app import app, db
+from models import User, Crypto
+
+def init_database():
+    """Initialise la base de données et crée toutes les tables"""
+    print("🔧 Initialisation de la base de données...")
+    
+    with app.app_context():
+        # Créer toutes les tables
+        db.create_all()
+        print("✅ Tables créées avec succès!")
+        
+        # Vérifier si des utilisateurs existent déjà
+        user_count = User.query.count()
+        print(f"👥 Nombre d'utilisateurs existants: {user_count}")
+        
+        print("🎉 Base de données initialisée avec succès!")
+
+def reset_database():
+    """Supprime et recrée toutes les tables"""
+    print("🗑️  Réinitialisation de la base de données...")
+    
+    with app.app_context():
+        # Supprimer toutes les tables
+        db.drop_all()
+        print("✅ Tables supprimées!")
+        
+        # Recréer les tables
+        db.create_all()
+        print("✅ Nouvelles tables créées!")
+        
+        print("🎉 Base de données réinitialisée avec succès!")
+
+def show_database_info():
+    """Affiche les informations de la base de données"""
+    with app.app_context():
+        user_count = User.query.count()
+        crypto_count = Crypto.query.count()
+        
+        print("📊 Informations de la base de données:")
+        print(f"   - Utilisateurs: {user_count}")
+        print(f"   - Cryptomonnaies: {crypto_count}")
+        
+        if user_count > 0:
+            print("\n👥 Utilisateurs existants:")
+            for user in User.query.all():
+                crypto_count_for_user = Crypto.query.filter_by(user_id=user.id).count()
+                print(f"   - {user.username} ({user.email}) - {crypto_count_for_user} cryptos")
+
+if __name__ == '__main__':
+    import sys
+    
+    if len(sys.argv) > 1:
+        command = sys.argv[1].lower()
+        
+        if command == 'init':
+            init_database()
+        elif command == 'reset':
+            confirm = input("Êtes-vous sûr de vouloir supprimer toutes les données? (y/N): ")
+            if confirm.lower() == 'y':
+                reset_database()
+            else:
+                print("❌ Opération annulée.")
+        elif command == 'info':
+            show_database_info()
+        else:
+            print("❌ Commande inconnue. Utilisez: init, reset, ou info")
+    else:
+        print("Usage:")
+        print("  python init_db.py init    - Initialiser la base de données")
+        print("  python init_db.py reset   - Réinitialiser la base de données")
+        print("  python init_db.py info    - Afficher les informations de la base")
