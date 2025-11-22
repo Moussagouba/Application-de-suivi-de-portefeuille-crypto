@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
@@ -9,8 +10,8 @@ from datetime import datetime
 
 # Initialiser Flask
 app = Flask(__name__)
-app.secret_key = 'crypto_portfolio_mobile_2025_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///crypto_portfolio.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'crypto_portfolio_mobile_2025_secret_key')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///crypto_portfolio.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSON_SORT_KEYS'] = False
 

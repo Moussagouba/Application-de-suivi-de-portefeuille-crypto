@@ -2,6 +2,32 @@
 // Remplace les endpoints Flask avec API CoinGecko
 
 const fetch = require('node-fetch');
+const { neon } = require('@neondatabase/serverless');
+
+// Charger les variables d'environnement pour le développement local
+if (process.env.NODE_ENV !== 'production') {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(__dirname, '../../.env');
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8');
+        const envVars = envContent.split('\n').filter(line => line.includes('='));
+        envVars.forEach(line => {
+            const [key, ...valueParts] = line.split('=');
+            const value = valueParts.join('=').trim();
+            if (!process.env[key.trim()]) {
+                process.env[key.trim()] = value;
+            }
+        });
+    }
+}
+
+// Configuration de la connexion Neon avec connection pooling
+const sql = neon(process.env.DATABASE_URL, {
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 30000,
+    max: 10, // Connection pooling
+});
 
 exports.handler = async (event, context) => {
     const method = event.httpMethod;

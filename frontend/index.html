@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Portefeuille Crypto - Accueil</title>
-    <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -418,6 +417,9 @@
             color: var(--text-light);
             transition: var(--transition);
             font-size: 0.75rem;
+            background: none;
+            border: none;
+            cursor: pointer;
         }
 
         .bottom-nav-item:hover {
@@ -553,10 +555,47 @@
         .mt-2 {
             margin-top: 0.5rem;
         }
+
+        /* Statistiques */
+        .stat-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-logo">
+                    <i class="fas fa-coins"></i>
+                    <span>Portefeuille Crypto</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-time" id="currentTime">--:--</div>
+                <div class="header-actions">
+                    <button class="header-btn" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <!-- Contenu principal -->
     <main class="main-content">
         <div class="content-wrapper">
@@ -575,14 +614,14 @@
                     <i class="fas fa-sync-alt"></i>
                     Actualiser
                 </button>
-                <a href="#" class="btn btn-success" onclick="openAddModal()">
+                <button class="btn btn-success" onclick="openAddModal()">
                     <i class="fas fa-plus"></i>
                     Ajouter
-                </a>
-                <a href="#" class="btn btn-danger" onclick="openWithdrawModal()">
+                </button>
+                <button class="btn btn-danger" onclick="openWithdrawModal()">
                     <i class="fas fa-wallet"></i>
                     Retirer
-                </a>
+                </button>
             </div>
 
             <!-- Statistiques -->
@@ -650,22 +689,22 @@
 
     <!-- Navigation en bas (Mobile) -->
     <nav class="bottom-nav">
-        <a href="#" class="bottom-nav-item active" onclick="showPage('dashboard')">
+        <button class="bottom-nav-item active" onclick="showPage('dashboard')">
             <i class="fas fa-home"></i>
             <span>Accueil</span>
-        </a>
-        <a href="#" class="bottom-nav-item" onclick="openAddModal()">
+        </button>
+        <button class="bottom-nav-item" onclick="openAddModal()">
             <i class="fas fa-plus"></i>
             <span>Ajouter</span>
-        </a>
-        <a href="#" class="bottom-nav-item" onclick="showPage('analytics')">
+        </button>
+        <button class="bottom-nav-item" onclick="showPage('analytics')">
             <i class="fas fa-chart-pie"></i>
             <span>Stats</span>
-        </a>
-        <a href="#" class="bottom-nav-item" onclick="showSettings()">
+        </button>
+        <button class="bottom-nav-item" onclick="showSettings()">
             <i class="fas fa-cog"></i>
             <span>Paramètres</span>
-        </a>
+        </button>
     </nav>
 
     <script>
@@ -801,10 +840,10 @@
                     <div class="empty-state">
                         <i class="fas fa-coins"></i>
                         <p>Aucune cryptomonnaie dans votre portefeuille</p>
-                        <a href="#" class="btn btn-primary" onclick="openAddModal()">
+                        <button class="btn btn-primary" onclick="openAddModal()">
                             <i class="fas fa-plus"></i>
                             Ajouter votre première crypto
-                        </a>
+                        </button>
                     </div>
                 `;
                 return;
@@ -978,6 +1017,20 @@
             alert(`Page ${page}: Bientôt disponible`);
         }
 
+        // Mettre à jour l'heure
+        function updateTime() {
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                const now = new Date();
+                const options = {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                };
+                timeElement.textContent = now.toLocaleTimeString('fr-FR', options);
+            }
+        }
+
         // Initialisation
         document.addEventListener('DOMContentLoaded', function () {
             console.log('DOM chargé, initialisation...');
@@ -986,10 +1039,13 @@
             loadMarketData();
             displayCryptoList();
             displayPortfolioStats();
+            updateTime();
 
             // Gestion du bouton de rafraîchissement
             const refreshBtn = document.getElementById('refreshBtn');
-            refreshBtn.addEventListener('click', refreshData);
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshData);
+            }
 
             // Actualisation automatique du marché toutes les 5 minutes
             setInterval(loadMarketData, 300000);
