@@ -569,6 +569,209 @@
         .font-semibold {
             font-weight: 600;
         }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.9) translateY(20px);
+            transition: var(--transition);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .setting-group {
+            margin-bottom: 2rem;
+        }
+
+        .setting-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info {
+            flex: 1;
+        }
+
+        .setting-label {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .setting-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toggle-switch.active {
+            background: var(--primary-color);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .toggle-switch.active::after {
+            left: 28px;
+        }
+
+        .input-field {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .select-field {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .select-field:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
     </style>
 </head>
 
@@ -707,6 +910,156 @@
         </button>
     </nav>
 
+    <!-- Modal Paramètres -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-cog"></i>
+                    Paramètres
+                </h2>
+                <button class="modal-close" onclick="closeSettings()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="setting-group">
+                <h3 class="setting-title">
+                    <i class="fas fa-user"></i>
+                    Profil Utilisateur
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Nom d'utilisateur</div>
+                        <div class="setting-description">Votre nom d'affichage</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="text" class="input-field" id="userName" style="width: 150px;">
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Email</div>
+                        <div class="setting-description">Adresse email de contact</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="email" class="input-field" id="userEmail" style="width: 200px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <h3 class="setting-title">
+                    <i class="fas fa-palette"></i>
+                    Apparence
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Thème sombre</div>
+                        <div class="setting-description">Activer le mode sombre</div>
+                    </div>
+                    <div class="setting-control">
+                        <div class="toggle-switch" id="darkModeToggle" onclick="toggleDarkMode()"></div>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Devise par défaut</div>
+                        <div class="setting-description">Devise d'affichage des prix</div>
+                    </div>
+                    <div class="setting-control">
+                        <select class="select-field" id="currencySelect">
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="BTC">BTC (₿)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <h3 class="setting-title">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Alertes de prix</div>
+                        <div class="setting-description">Notifications de variations importantes</div>
+                    </div>
+                    <div class="setting-control">
+                        <div class="toggle-switch" id="priceAlertsToggle" onclick="togglePriceAlerts()"></div>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Mises à jour automatiques</div>
+                        <div class="setting-description">Actualisation périodique des prix</div>
+                    </div>
+                    <div class="setting-control">
+                        <div class="toggle-switch active" id="autoRefreshToggle" onclick="toggleAutoRefresh()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <h3 class="setting-title">
+                    <i class="fas fa-database"></i>
+                    Données
+                </h3>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Exporter les données</div>
+                        <div class="setting-description">Télécharger vos données en JSON</div>
+                    </div>
+                    <div class="setting-control">
+                        <button class="btn btn-secondary btn-sm" onclick="exportData()">
+                            <i class="fas fa-download"></i>
+                            Exporter
+                        </button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Importer des données</div>
+                        <div class="setting-description">Charger des données depuis un fichier</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="file" id="importFile" accept=".json" style="display: none;">
+                        <button class="btn btn-secondary btn-sm"
+                            onclick="document.getElementById('importFile').click()">
+                            <i class="fas fa-upload"></i>
+                            Importer
+                        </button>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <div class="setting-label">Effacer toutes les données</div>
+                        <div class="setting-description">Supprimer définitivement toutes vos données</div>
+                    </div>
+                    <div class="setting-control">
+                        <button class="btn btn-danger btn-sm" onclick="clearAllData()">
+                            <i class="fas fa-trash"></i>
+                            Effacer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i>
+                    Sauvegarder
+                </button>
+                <button class="btn btn-secondary" onclick="closeSettings()">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuration de l'API
         const API_BASE = '/.netlify/functions';
@@ -714,6 +1067,12 @@
         // State management
         let portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio')) || [];
         let user = JSON.parse(localStorage.getItem('cryptoUser')) || null;
+        let settings = JSON.parse(localStorage.getItem('cryptoSettings')) || {
+            darkMode: false,
+            currency: 'USD',
+            priceAlerts: false,
+            autoRefresh: true
+        };
 
         // Fonction pour appeler l'API
         async function callAPI(endpoint, options = {}) {
@@ -1009,12 +1368,252 @@
 
         // Afficher les paramètres
         function showSettings() {
-            alert('Paramètres: Bientôt disponible');
+            loadSettings();
+            document.getElementById('settingsModal').classList.add('show');
+        }
+
+        // Fermer les paramètres
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        // Charger les paramètres
+        function loadSettings() {
+            document.getElementById('userName').value = user?.username || '';
+            document.getElementById('userEmail').value = user?.email || '';
+
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            if (settings.darkMode) {
+                darkModeToggle.classList.add('active');
+            } else {
+                darkModeToggle.classList.remove('active');
+            }
+
+            document.getElementById('currencySelect').value = settings.currency;
+
+            const priceAlertsToggle = document.getElementById('priceAlertsToggle');
+            if (settings.priceAlerts) {
+                priceAlertsToggle.classList.add('active');
+            } else {
+                priceAlertsToggle.classList.remove('active');
+            }
+
+            const autoRefreshToggle = document.getElementById('autoRefreshToggle');
+            if (settings.autoRefresh) {
+                autoRefreshToggle.classList.add('active');
+            } else {
+                autoRefreshToggle.classList.remove('active');
+            }
+        }
+
+        // Sauvegarder les paramètres
+        function saveSettings() {
+            const newUsername = document.getElementById('userName').value.trim();
+            const newEmail = document.getElementById('userEmail').value.trim();
+
+            if (user) {
+                user.username = newUsername || 'Utilisateur';
+                user.email = newEmail || 'demo@example.com';
+                localStorage.setItem('cryptoUser', JSON.stringify(user));
+            }
+
+            settings.currency = document.getElementById('currencySelect').value;
+
+            localStorage.setItem('cryptoSettings', JSON.stringify(settings));
+
+            closeSettings();
+            alert('Paramètres sauvegardés avec succès !');
+        }
+
+        // Basculer le mode sombre
+        function toggleDarkMode() {
+            const toggle = document.getElementById('darkModeToggle');
+            settings.darkMode = !settings.darkMode;
+
+            if (settings.darkMode) {
+                toggle.classList.add('active');
+                // Appliquer le thème sombre (simplifié)
+                document.documentElement.style.setProperty('--bg-primary', '#1a202c');
+                document.documentElement.style.setProperty('--bg-secondary', '#2d3748');
+                document.documentElement.style.setProperty('--text-primary', '#ffffff');
+                document.documentElement.style.setProperty('--text-secondary', '#a0aec0');
+            } else {
+                toggle.classList.remove('active');
+                // Remettre le thème clair
+                document.documentElement.style.setProperty('--bg-primary', '#ffffff');
+                document.documentElement.style.setProperty('--bg-secondary', '#f7fafc');
+                document.documentElement.style.setProperty('--text-primary', '#2d3748');
+                document.documentElement.style.setProperty('--text-secondary', '#718096');
+            }
+        }
+
+        // Basculer les alertes de prix
+        function togglePriceAlerts() {
+            const toggle = document.getElementById('priceAlertsToggle');
+            settings.priceAlerts = !settings.priceAlerts;
+
+            if (settings.priceAlerts) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+
+        // Basculer l'actualisation automatique
+        function toggleAutoRefresh() {
+            const toggle = document.getElementById('autoRefreshToggle');
+            settings.autoRefresh = !settings.autoRefresh;
+
+            if (settings.autoRefresh) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+
+        // Exporter les données
+        function exportData() {
+            const data = {
+                user: user,
+                portfolio: portfolio,
+                settings: settings,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `crypto-portfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('Données exportées avec succès !');
+        }
+
+        // Importer des données
+        document.getElementById('importFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (data.user) {
+                        user = data.user;
+                        localStorage.setItem('cryptoUser', JSON.stringify(user));
+                    }
+
+                    if (data.portfolio) {
+                        portfolio = data.portfolio;
+                        localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+                    }
+
+                    if (data.settings) {
+                        settings = data.settings;
+                        localStorage.setItem('cryptoSettings', JSON.stringify(settings));
+                    }
+
+                    // Recharger l'interface
+                    displayCryptoList();
+                    displayPortfolioStats();
+                    loadSettings();
+
+                    alert('Données importées avec succès !');
+                } catch (error) {
+                    alert('Erreur lors de l\'importation : fichier invalide');
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Effacer toutes les données
+        function clearAllData() {
+            if (!confirm('Êtes-vous sûr de vouloir effacer TOUTES vos données ? Cette action est irréversible.')) {
+                return;
+            }
+
+            if (!confirm('Dernière confirmation : toutes vos cryptomonnaies et paramètres seront supprimés. Continuer ?')) {
+                return;
+            }
+
+            // Effacer toutes les données
+            portfolio = [];
+            user = null;
+            settings = {
+                darkMode: false,
+                currency: 'USD',
+                priceAlerts: false,
+                autoRefresh: true
+            };
+
+            localStorage.clear();
+
+            // Réinitialiser l'utilisateur
+            initUser();
+
+            // Recharger l'interface
+            displayCryptoList();
+            displayPortfolioStats();
+
+            closeSettings();
+            alert('Toutes les données ont été effacées.');
         }
 
         // Afficher une page spécifique
         function showPage(page) {
-            alert(`Page ${page}: Bientôt disponible`);
+            if (page === 'analytics') {
+                showAnalytics();
+            } else {
+                alert(`Page ${page}: Bientôt disponible`);
+            }
+        }
+
+        // Afficher les analytics
+        function showAnalytics() {
+            const stats = calculatePortfolioStats();
+            const bestPerformer = portfolio.reduce((best, crypto) => {
+                const currentValue = crypto.quantity * (crypto.currentPrice || crypto.purchase_price);
+                const investedValue = crypto.quantity * crypto.purchase_price;
+                const performance = investedValue > 0 ? ((currentValue - investedValue) / investedValue) * 100 : 0;
+
+                if (!best || performance > best.performance) {
+                    return { crypto, performance };
+                }
+                return best;
+            }, null);
+
+            const worstPerformer = portfolio.reduce((worst, crypto) => {
+                const currentValue = crypto.quantity * (crypto.currentPrice || crypto.purchase_price);
+                const investedValue = crypto.quantity * crypto.purchase_price;
+                const performance = investedValue > 0 ? ((currentValue - investedValue) / investedValue) * 100 : 0;
+
+                if (!worst || performance < worst.performance) {
+                    return { crypto, performance };
+                }
+                return worst;
+            }, null);
+
+            let message = '📊 ANALYSES DU PORTEFEUILLE 📊\n\n';
+            message += `💰 Valeur totale: $${stats.totalValue.toFixed(2)}\n`;
+            message += `💵 Investi: $${stats.totalInvested.toFixed(2)}\n`;
+            message += `📈 Performance: ${stats.totalProfitLoss >= 0 ? '+' : ''}$${Math.abs(stats.totalProfitLoss).toFixed(2)} (${stats.profitLossPercentage.toFixed(2)}%)\n\n`;
+
+            if (bestPerformer) {
+                message += `🏆 Meilleure performance: ${bestPerformer.crypto.name} (${bestPerformer.performance.toFixed(2)}%)\n`;
+            }
+            if (worstPerformer) {
+                message += `📉 Pire performance: ${worstPerformer.crypto.name} (${worstPerformer.performance.toFixed(2)}%)\n`;
+            }
+
+            message += `\n📊 Nombre de cryptos: ${portfolio.length}`;
+
+            alert(message);
         }
 
         // Mettre à jour l'heure
@@ -1036,6 +1635,7 @@
             console.log('DOM chargé, initialisation...');
 
             initUser();
+            applySettings();
             loadMarketData();
             displayCryptoList();
             displayPortfolioStats();
@@ -1047,8 +1647,17 @@
                 refreshBtn.addEventListener('click', refreshData);
             }
 
-            // Actualisation automatique du marché toutes les 5 minutes
-            setInterval(loadMarketData, 300000);
+            // Gestion de la fermeture du modal en cliquant à l'extérieur
+            document.getElementById('settingsModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closeSettings();
+                }
+            });
+
+            // Actualisation automatique du marché toutes les 5 minutes (si activé)
+            if (settings.autoRefresh) {
+                setInterval(loadMarketData, 300000);
+            }
 
             // Animation des éléments
             const cards = document.querySelectorAll('.crypto-card');
@@ -1063,6 +1672,13 @@
                 }, index * 100);
             });
         });
+
+        // Appliquer les paramètres au chargement
+        function applySettings() {
+            if (settings.darkMode) {
+                toggleDarkMode();
+            }
+        }
     </script>
 </body>
 
