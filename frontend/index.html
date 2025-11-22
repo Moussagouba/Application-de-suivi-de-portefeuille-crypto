@@ -673,6 +673,30 @@
             border-bottom: none;
         }
 
+        /* Auth Modal Styles */
+        .auth-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
         .setting-info {
             flex: 1;
         }
@@ -791,6 +815,16 @@
             <div class="header-right">
                 <div class="header-time" id="currentTime">--:--</div>
                 <div class="header-actions">
+                    <div id="userInfo" style="display: none; margin-right: 1rem; font-weight: 500;"></div>
+                    <button class="header-btn" id="loginBtn" onclick="openAuthModal('login')">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                    <button class="header-btn" id="registerBtn" onclick="openAuthModal('register')">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="header-btn" id="logoutBtn" onclick="logout()" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                     <button class="header-btn" id="notificationBtn">
                         <i class="fas fa-bell"></i>
                     </button>
@@ -1060,6 +1094,78 @@
         </div>
     </div>
 
+    <!-- Modal d'authentification -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-user"></i>
+                    <span id="authModalTitle">Connexion</span>
+                </h3>
+                <button class="modal-close" onclick="closeAuthModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Formulaire de connexion -->
+                <div id="loginForm" class="auth-form">
+                    <div class="input-group">
+                        <label for="loginUsername">Nom d'utilisateur</label>
+                        <input type="text" id="loginUsername" class="input-field" placeholder="Votre nom d'utilisateur">
+                    </div>
+                    <div class="input-group">
+                        <label for="loginPassword">Mot de passe</label>
+                        <input type="password" id="loginPassword" class="input-field" placeholder="Votre mot de passe">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="closeAuthModal()">Annuler</button>
+                        <button class="btn btn-primary" onclick="handleLogin()">Se connecter</button>
+                    </div>
+                </div>
+
+                <!-- Formulaire d'inscription -->
+                <div id="registerForm" class="auth-form" style="display: none;">
+                    <div class="input-group">
+                        <label for="registerUsername">Nom d'utilisateur</label>
+                        <input type="text" id="registerUsername" class="input-field"
+                            placeholder="Choisissez un nom d'utilisateur">
+                    </div>
+                    <div class="input-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" class="input-field"
+                            placeholder="votre.email@example.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="registerPassword">Mot de passe</label>
+                        <input type="password" id="registerPassword" class="input-field"
+                            placeholder="Minimum 6 caractères">
+                    </div>
+                    <div class="input-group">
+                        <label for="registerConfirmPassword">Confirmer le mot de passe</label>
+                        <input type="password" id="registerConfirmPassword" class="input-field"
+                            placeholder="Répétez votre mot de passe">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="closeAuthModal()">Annuler</button>
+                        <button class="btn btn-success" onclick="handleRegister()">S'inscrire</button>
+                    </div>
+                </div>
+
+                <!-- Bouton de basculement -->
+                <div class="auth-toggle">
+                    <button id="toggleToRegister" class="btn btn-ghost btn-sm" onclick="toggleAuthForm('register')">
+                        Pas encore de compte ? S'inscrire
+                    </button>
+                    <button id="toggleToLogin" class="btn btn-ghost btn-sm" onclick="toggleAuthForm('login')"
+                        style="display: none;">
+                        Déjà un compte ? Se connecter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuration de l'API
         const API_BASE = '/.netlify/functions';
@@ -1067,6 +1173,8 @@
         // State management
         let portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio')) || [];
         let user = JSON.parse(localStorage.getItem('cryptoUser')) || null;
+        let authToken = localStorage.getItem('authToken') || null;
+        let isAuthenticated = !!authToken;
         let settings = JSON.parse(localStorage.getItem('cryptoSettings')) || {
             darkMode: false,
             currency: 'USD',
@@ -1077,11 +1185,18 @@
         // Fonction pour appeler l'API
         async function callAPI(endpoint, options = {}) {
             try {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+
+                // Ajouter le token d'authentification si disponible
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
                 const response = await fetch(`${API_BASE}${endpoint}`, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...options.headers
-                    },
+                    headers,
                     ...options
                 });
                 return await response.json();
@@ -1101,6 +1216,152 @@
                     created: new Date().toISOString()
                 };
                 localStorage.setItem('cryptoUser', JSON.stringify(user));
+            }
+        }
+
+        // Vérifier l'authentification au démarrage
+        async function checkAuthStatus() {
+            if (authToken) {
+                try {
+                    const result = await callAPI('/auth-api/verify');
+                    if (result && result.valid) {
+                        isAuthenticated = true;
+                        user = {
+                            id: result.user.userId,
+                            username: result.user.username,
+                            email: result.user.email
+                        };
+                        localStorage.setItem('cryptoUser', JSON.stringify(user));
+                        updateAuthUI();
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Token verification failed:', error);
+                }
+            }
+
+            // Token invalide ou inexistant
+            authToken = null;
+            localStorage.removeItem('authToken');
+            isAuthenticated = false;
+            updateAuthUI();
+        }
+
+        // Mettre à jour l'interface selon l'état d'authentification
+        function updateAuthUI() {
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userInfo = document.getElementById('userInfo');
+
+            if (isAuthenticated && user) {
+                // Utilisateur connecté
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (registerBtn) registerBtn.style.display = 'none';
+                if (logoutBtn) logoutBtn.style.display = 'block';
+                if (userInfo) {
+                    userInfo.style.display = 'block';
+                    userInfo.textContent = `Connecté en tant que ${user.username}`;
+                }
+            } else {
+                // Utilisateur non connecté
+                if (loginBtn) loginBtn.style.display = 'block';
+                if (registerBtn) registerBtn.style.display = 'block';
+                if (logoutBtn) logoutBtn.style.display = 'none';
+                if (userInfo) userInfo.style.display = 'none';
+            }
+        }
+
+        // Inscription
+        async function register(username, email, password) {
+            try {
+                const result = await callAPI('/auth-api/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                if (result && result.token) {
+                    authToken = result.token;
+                    user = result.user;
+                    isAuthenticated = true;
+
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('cryptoUser', JSON.stringify(user));
+
+                    updateAuthUI();
+                    closeAuthModal();
+                    alert(`Bienvenue ${user.username} ! Votre compte a été créé avec succès.`);
+
+                    // Recharger les données utilisateur
+                    loadUserPortfolio();
+                } else {
+                    throw new Error(result?.error || 'Erreur lors de l\'inscription');
+                }
+            } catch (error) {
+                alert('Erreur d\'inscription: ' + error.message);
+            }
+        }
+
+        // Connexion
+        async function login(username, password) {
+            try {
+                const result = await callAPI('/auth-api/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (result && result.token) {
+                    authToken = result.token;
+                    user = result.user;
+                    isAuthenticated = true;
+
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('cryptoUser', JSON.stringify(user));
+
+                    updateAuthUI();
+                    closeAuthModal();
+                    alert(`Bienvenue ${user.username} !`);
+
+                    // Recharger les données utilisateur
+                    loadUserPortfolio();
+                } else {
+                    throw new Error(result?.error || 'Erreur lors de la connexion');
+                }
+            } catch (error) {
+                alert('Erreur de connexion: ' + error.message);
+            }
+        }
+
+        // Déconnexion
+        function logout() {
+            authToken = null;
+            user = null;
+            isAuthenticated = false;
+
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('cryptoUser');
+
+            // Réinitialiser le portefeuille local
+            portfolio = [];
+            localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+
+            updateAuthUI();
+            displayCryptoList();
+            displayPortfolioStats();
+
+            alert('Vous avez été déconnecté.');
+        }
+
+        // Charger le portefeuille de l'utilisateur depuis la base de données
+        async function loadUserPortfolio() {
+            if (!isAuthenticated) return;
+
+            try {
+                // Pour l'instant, on garde le système localStorage
+                // TODO: Implémenter la synchronisation avec la base de données
+                console.log('Portefeuille utilisateur chargé');
+            } catch (error) {
+                console.error('Erreur chargement portefeuille:', error);
             }
         }
 
@@ -1631,8 +1892,11 @@
         }
 
         // Initialisation
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
             console.log('DOM chargé, initialisation...');
+
+            // Vérifier l'état d'authentification en premier
+            await checkAuthStatus();
 
             initUser();
             applySettings();
@@ -1651,6 +1915,13 @@
             document.getElementById('settingsModal').addEventListener('click', function (e) {
                 if (e.target === this) {
                     closeSettings();
+                }
+            });
+
+            // Gestion de la fermeture du modal d'authentification
+            document.getElementById('authModal').addEventListener('click', function (e) {
+                if (e.target === this) {
+                    closeAuthModal();
                 }
             });
 
@@ -1678,6 +1949,83 @@
             if (settings.darkMode) {
                 toggleDarkMode();
             }
+        }
+
+        // Gestion de l'authentification
+        function openAuthModal(mode = 'login') {
+            const modal = document.getElementById('authModal');
+            const title = document.getElementById('authModalTitle');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            if (mode === 'register') {
+                title.textContent = 'Inscription';
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                document.getElementById('toggleToRegister').style.display = 'none';
+                document.getElementById('toggleToLogin').style.display = 'inline-block';
+            } else {
+                title.textContent = 'Connexion';
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                document.getElementById('toggleToRegister').style.display = 'inline-block';
+                document.getElementById('toggleToLogin').style.display = 'none';
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeAuthModal() {
+            const modal = document.getElementById('authModal');
+            modal.classList.remove('show');
+
+            // Réinitialiser les formulaires
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerConfirmPassword').value = '';
+        }
+
+        function toggleAuthForm(mode) {
+            openAuthModal(mode);
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('Veuillez remplir tous les champs.');
+                return;
+            }
+
+            await login(username, password);
+        }
+
+        async function handleRegister() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (!username || !email || !password || !confirmPassword) {
+                alert('Veuillez remplir tous les champs.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Les mots de passe ne correspondent pas.');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Le mot de passe doit contenir au moins 6 caractères.');
+                return;
+            }
+
+            await register(username, email, password);
         }
     </script>
 </body>

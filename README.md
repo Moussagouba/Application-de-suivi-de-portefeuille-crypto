@@ -219,8 +219,13 @@ L'application supporte automatiquement les principales cryptomonnaies :
 ### API REST
 - `POST /search_crypto` : Recherche de cryptomonnaies
 - `GET /api/crypto_price/<symbol>` : Prix d'une crypto
-- `GET /api/portfolio_stats` : Statistiques du portefeuille
 - `GET /api/market_data` : Données du marché
+
+### API Authentification
+- `POST /auth-api/register` : Inscription utilisateur
+- `POST /auth-api/login` : Connexion utilisateur
+- `GET /auth-api/verify` : Vérification token JWT
+- `GET /auth-api/profile` : Profil utilisateur (protégé)
 
 ## 🎨 Interface Utilisateur
 
@@ -239,10 +244,11 @@ L'application supporte automatiquement les principales cryptomonnaies :
 
 ### 🔑 Fonctionnalités d'Authentification
 - **Inscription sécurisée** avec validation des données
-- **Connexion/Déconnexion** avec sessions Flask
-- **Hachage des mots de passe** avec Werkzeug
+- **Connexion/Déconnexion** avec JWT tokens
+- **Hachage des mots de passe** avec bcrypt
 - **Interface utilisateur** avec informations de profil
-- **Protection des routes** avec Flask-Login
+- **Protection des routes** avec tokens JWT
+- **Vérification automatique** des tokens à chaque chargement
 
 ### 🏷️ Gestion des Comptes
 - **Profil utilisateur** avec informations personnelles
