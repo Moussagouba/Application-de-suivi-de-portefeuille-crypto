@@ -1,6 +1,6 @@
 [build]
   publish = "frontend"
-  command = "echo 'Frontend is ready for deployment'"
+  command = "npm install && echo 'Frontend ready for deployment'"
 
 [build.environment]
   NODE_VERSION = "18"

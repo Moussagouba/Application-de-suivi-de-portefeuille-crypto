@@ -7,7 +7,9 @@
         "dev": "python -m http.server 8000",
         "start": "serve -s dist -p 3000"
     },
-    "dependencies": {},
+    "dependencies": {
+        "node-fetch": "^2.6.7"
+    },
     "devDependencies": {},
     "engines": {
         "node": ">=16.0.0"
