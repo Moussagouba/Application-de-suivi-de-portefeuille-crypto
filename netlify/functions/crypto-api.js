@@ -23,7 +23,9 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Configuration de la connexion Neon avec connection pooling
-const sql = neon(process.env.DATABASE_URL, {
+// Utilise NETLIFY_DATABASE_URL (configuré par Neon) ou DATABASE_URL (développement local)
+const databaseUrl = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL;
+const sql = neon(databaseUrl, {
     connectionTimeoutMillis: 10000,
     idleTimeoutMillis: 30000,
     max: 10, // Connection pooling
