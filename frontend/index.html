@@ -1168,7 +1168,9 @@
 
     <script>
         // Configuration de l'API
-        const API_BASE = '/.netlify/functions';
+        // Détection automatique de l'environnement de développement
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_BASE = isLocalhost ? 'http://localhost:9999/.netlify/functions' : '/.netlify/functions';
 
         // State management
         let portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio')) || [];
