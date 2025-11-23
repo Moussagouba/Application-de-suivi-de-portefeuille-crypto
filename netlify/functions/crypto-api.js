@@ -33,7 +33,10 @@ const sql = neon(databaseUrl, {
 
 exports.handler = async (event, context) => {
     const method = event.httpMethod;
-    const path = event.path;
+    const fullPath = event.path;
+
+    // Extraire le chemin relatif (après /crypto-api/)
+    const path = fullPath.replace('/.netlify/functions/crypto-api', '') || '/';
 
     // CORS headers
     const headers = {
@@ -58,13 +61,13 @@ exports.handler = async (event, context) => {
             return await handleSearchCrypto(event, headers);
         } else if (path === '/portfolio_stats') {
             return await handlePortfolioStats(event, headers);
-        } else if (path === '/market_data') {
+        } else if (path === '/market_data' || path === '/market_data/') {
             return await handleMarketData(event, headers);
         } else {
             return {
                 statusCode: 404,
                 headers,
-                body: JSON.stringify({ error: 'API endpoint not found' })
+                body: JSON.stringify({ error: 'API endpoint not found', path: path })
             };
         }
     } catch (error) {
