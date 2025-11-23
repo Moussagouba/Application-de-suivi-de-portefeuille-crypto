@@ -8,7 +8,9 @@
         "start": "serve -s dist -p 3000"
     },
     "dependencies": {
-        "node-fetch": "^2.6.7"
+        "node-fetch": "^2.6.7",
+        "bcryptjs": "^2.4.3",
+        "jsonwebtoken": "^9.0.2"
     },
     "devDependencies": {},
     "engines": {
